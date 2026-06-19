@@ -1,104 +1,72 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { Leaf, Menu, ShoppingBag, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { Container } from '@/app/components/ui/Container';
 import { CartDrawer } from './CartDrawer';
 
 const navLinks = [
-  { href: '#products', label: 'Products' },
-  { href: '#story', label: 'Story' },
-  { href: '#benefits', label: 'Benefits' },
-  { href: '#testimonials', label: 'Testimonials' },
-  { href: '#faq', label: 'FAQ' },
+  { href: '/#products', label: 'Shop' },
+  { href: '/#story', label: 'Our Story' },
+  { href: '/#benefits', label: 'Benefits' },
+  { href: '/#testimonials', label: 'Reviews' },
+  { href: '/#faq', label: 'FAQ' },
 ];
 
-export const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+export function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const totalItems = useCartStore((state) => state.getTotalItems());
+
+  useEffect(() => {
+    const openCart = () => setCartOpen(true);
+    window.addEventListener('open-cart', openCart);
+    return () => window.removeEventListener('open-cart', openCart);
+  }, []);
 
   return (
     <>
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100/50 shadow-sm">
+      <nav className="sticky top-0 z-40 border-b border-[#1E5631]/10 bg-[#F8F7F2]/92 backdrop-blur-xl">
         <Container>
-          <div className="flex items-center justify-between py-4">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0f3d2e] to-[#3e7c4a] flex items-center justify-center group-hover:shadow-lg transition-all">
-                <span className="text-white font-bold text-lg font-playfair">A</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-playfair font-bold text-[#0f3d2e]">Aram Narpavi</h1>
-                <p className="text-xs text-[#3e7c4a] font-medium">Herbals</p>
-              </div>
+          <div className="flex h-[76px] items-center justify-between">
+            <Link href="/" className="flex items-center gap-3" aria-label="Aram Narpavi Herbals home">
+              <span className="grid size-11 place-items-center rounded-full bg-[#1E5631] text-white">
+                <Leaf className="size-5" />
+              </span>
+              <span className="leading-none">
+                <span className="block font-display text-lg font-bold text-[#1E5631]">Aram Narpavi</span>
+                <span className="mt-1 block text-[10px] font-bold uppercase tracking-[.28em] text-[#4F8A3F]">Herbals</span>
+              </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-10">
+            <div className="hidden items-center gap-8 lg:flex">
               {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm font-medium text-gray-700 hover:text-[#0f3d2e] transition-colors relative group"
-                >
+                <Link key={link.href} href={link.href} className="text-sm font-semibold text-[#385443] transition-colors hover:text-[#1E5631]">
                   {link.label}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#3e7c4a] to-[#8bc34a] group-hover:w-full transition-all duration-300" />
-                </a>
+                </Link>
               ))}
             </div>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2.5 hover:bg-gray-100 rounded-xl transition-all hover:shadow-md group"
-              >
-                <ShoppingCart className="w-5 h-5 text-[#0f3d2e] group-hover:scale-110 transition-transform" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-[#ff8c42] to-[#ffb366] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
-                    {totalItems}
-                  </span>
-                )}
+            <div className="flex items-center gap-2">
+              <button onClick={() => setCartOpen(true)} className="relative grid size-11 place-items-center rounded-full border border-[#1E5631]/15 bg-white text-[#1E5631] transition hover:bg-[#EAF5E4]" aria-label={`Open cart with ${totalItems} items`}>
+                <ShoppingBag className="size-5" />
+                {totalItems > 0 && <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-[#E69500] text-[10px] font-bold text-white">{totalItems}</span>}
               </button>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-all"
-              >
-                {isOpen ? (
-                  <X className="w-5 h-5 text-[#0f3d2e]" />
-                ) : (
-                  <Menu className="w-5 h-5 text-[#0f3d2e]" />
-                )}
+              <button onClick={() => setMenuOpen((open) => !open)} className="grid size-11 place-items-center rounded-full text-[#1E5631] lg:hidden" aria-label="Toggle menu" aria-expanded={menuOpen}>
+                {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
               </button>
             </div>
           </div>
-
-          {/* Mobile Menu */}
-          {isOpen && (
-            <div className="lg:hidden pb-4 border-t border-gray-100">
-              <div className="flex flex-col gap-3 py-4">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="text-gray-700 hover:text-[#0F3D2E] transition-colors font-medium px-4 py-2"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
+          {menuOpen && (
+            <div className="border-t border-[#1E5631]/10 py-3 lg:hidden">
+              {navLinks.map((link) => <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-3 font-semibold text-[#385443] hover:bg-[#EAF5E4]">{link.label}</Link>)}
             </div>
           )}
         </Container>
       </nav>
-
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
-};
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/cn';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+type CardProps = React.HTMLAttributes<HTMLDivElement>;
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, ...props }, ref) => (
@@ -14,7 +14,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 );
 Card.displayName = 'Card';
 
-interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
 
 export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ className, ...props }, ref) => (
@@ -23,7 +23,7 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 );
 CardHeader.displayName = 'CardHeader';
 
-interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
+type CardBodyProps = React.HTMLAttributes<HTMLDivElement>;
 
 export const CardBody = React.forwardRef<HTMLDivElement, CardBodyProps>(
   ({ className, ...props }, ref) => (
@@ -32,7 +32,7 @@ export const CardBody = React.forwardRef<HTMLDivElement, CardBodyProps>(
 );
 CardBody.displayName = 'CardBody';
 
-interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+type CardFooterProps = React.HTMLAttributes<HTMLDivElement>;
 
 export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
   ({ className, ...props }, ref) => (

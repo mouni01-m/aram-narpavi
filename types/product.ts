@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  slug: string;
   name: string;
   category: 'soaps' | 'malts' | 'oils' | 'honey' | 'wellness';
   price: number;
@@ -7,8 +8,11 @@ export interface Product {
   reviews: number;
   description: string;
   image: string;
+  images: string[];
   isBestseller: boolean;
   benefits: string[];
+  ingredients: string[];
+  usage: string;
 }
 
 export interface CartItem extends Product {

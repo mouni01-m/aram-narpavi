@@ -1,137 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Eye, Heart, Sprout } from 'lucide-react';
 import { Container } from '@/app/components/ui/Container';
-import { Section } from '@/app/components/ui/Section';
 
-interface CounterProps {
-  end: number;
-  label: string;
-  suffix?: string;
+const pillars = [
+  { icon: Sprout, title: 'Heritage', text: 'Rooted in traditional herbal knowledge passed through generations.' },
+  { icon: Heart, title: 'Mission', text: 'Make honest, natural wellness simple enough for every daily ritual.' },
+  { icon: Eye, title: 'Vision', text: 'Build a trusted herbal brand that cares for people and the planet.' },
+];
+const stats = [['10+', 'Years'], ['50+', 'Products'], ['100K+', 'Customers'], ['100%', 'Natural']];
+
+export function BrandStorySection() {
+  return <section id="story" className="bg-white py-20"><Container><div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative"><div className="relative aspect-[4/4.4] overflow-hidden rounded-[2rem] bg-[#EAF5E4]"><Image src="/images/Manjistha-soap/Manjistha Soap4.png" alt="Herbal product craftsmanship" fill sizes="(max-width: 1023px) 100vw, 50vw" className="object-cover" /></div><div className="absolute -bottom-5 right-5 rounded-2xl bg-[#E69500] px-5 py-4 text-white shadow-xl"><span className="block font-display text-2xl font-bold">Nature first</span><span className="text-xs font-semibold uppercase tracking-widest">Always and in all ways</span></div></motion.div>
+    <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}><p className="eyebrow">Our story</p><h2 className="section-title mt-3">Wellness with roots, crafted with purpose.</h2><p className="mt-5 leading-7 text-[#607065]">Aram Narpavi Herbals brings traditional plant wisdom into modern homes through straightforward, carefully considered products.</p><div className="mt-7 space-y-5">{pillars.map(({icon: Icon,title,text}) => <div key={title} className="flex gap-4"><span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#EAF5E4] text-[#1E5631]"><Icon className="size-5" /></span><div><h3 className="text-xl font-bold text-[#1E5631]">{title}</h3><p className="mt-1 text-sm leading-6 text-[#607065]">{text}</p></div></div>)}</div></motion.div>
+  </div><div className="mt-12 grid grid-cols-2 overflow-hidden rounded-3xl bg-[#1E5631] sm:grid-cols-4">{stats.map(([value,label],i) => <div key={label} className={`p-6 text-center text-white sm:p-8 ${i ? 'border-l border-white/15' : ''}`}><strong className="block font-display text-3xl sm:text-4xl">{value}</strong><span className="mt-1 block text-xs font-semibold uppercase tracking-widest text-white/65">{label}</span></div>)}</div></Container></section>;
 }
-
-const Counter: React.FC<CounterProps> = ({ end, label, suffix = '' }) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let start = 0;
-    const increment = end / 100;
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 20);
-    return () => clearInterval(timer);
-  }, [end]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true }}
-    >
-      <div className="text-5xl lg:text-6xl font-playfair font-bold bg-gradient-to-r from-[#0f3d2e] to-[#3e7c4a] bg-clip-text text-transparent mb-2">
-        {count}
-        {suffix}
-      </div>
-      <p className="text-gray-600 font-medium text-lg">{label}</p>
-    </motion.div>
-  );
-};
-
-export const BrandStorySection: React.FC = () => {
-  return (
-    <Section id="story" className="bg-gradient-to-b from-white via-[#f8f6f0] to-white py-28">
-      <Container>
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-24"
-        >
-          <h2 className="text-4xl lg:text-5xl font-playfair font-bold text-[#0f3d2e] mb-6">
-            Our Heritage
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
-            Rooted in ancient wisdom, grown with modern expertise. Every product tells a story of tradition, quality, and commitment to your wellness.
-          </p>
-        </motion.div>
-
-        {/* Story Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-28">
-          {/* Left: Text */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <div>
-              <h3 className="text-3xl lg:text-4xl font-playfair font-bold text-[#0f3d2e] mb-4">
-                Our Mission
-              </h3>
-              <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                At Aram Narpavi Herbals, we believe that nature holds the answer to wellness. Our mission is to bridge the gap between ancient herbal knowledge and contemporary wellness needs.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Every product we create is a testament to our commitment to purity, quality, and effectiveness.
-              </p>
-            </div>
-
-            <div className="h-1 w-20 bg-gradient-to-r from-[#ff8c42] to-[#ffb366] rounded-full" />
-
-            <div>
-              <h3 className="text-3xl lg:text-4xl font-playfair font-bold text-[#0f3d2e] mb-4">
-                Our Vision
-              </h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                To become the world's most trusted brand for natural, traditional herbal wellness products that transform lives and respect the planet.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Right: Image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="absolute -inset-8 bg-gradient-to-br from-[#3e7c4a]/10 to-[#ff8c42]/10 rounded-3xl blur-2xl" />
-            <img
-              src="https://images.unsplash.com/photo-1599599810694-f3fc466d00f8?w=600&h=600&fit=crop"
-              alt="Our Story"
-              className="w-full rounded-3xl shadow-2xl relative z-10"
-            />
-          </motion.div>
-        </div>
-
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="bg-gradient-to-br from-white to-[#f8f6f0] p-12 lg:p-16 rounded-3xl border border-gray-100/50 shadow-lg"
-        >
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 lg:gap-12">
-            <Counter end={10} label="Years of Excellence" />
-            <Counter end={50} label="Premium Products" suffix="+" />
-            <Counter end={100} label="Happy Customers" suffix="K+" />
-            <Counter end={100} label="Natural Ingredients" suffix="%" />
-          </div>
-        </motion.div>
-      </Container>
-    </Section>
-  );
-};

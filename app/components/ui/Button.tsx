@@ -3,18 +3,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/cn';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95',
+  'inline-flex items-center justify-center font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[.98]',
   {
     variants: {
       variant: {
         primary:
-          'bg-gradient-to-r from-[#0f3d2e] to-[#3e7c4a] text-white hover:shadow-lg hover:from-[#0f3d2e] hover:to-[#2f6438]',
+          'bg-[#1E5631] text-white hover:bg-[#174526] hover:shadow-lg',
         secondary:
-          'bg-gradient-to-r from-[#3e7c4a] to-[#2f6438] text-white hover:shadow-lg hover:from-[#2f6438] hover:to-[#0f3d2e]',
-        accent: 'bg-gradient-to-r from-[#ff8c42] to-[#ffb366] text-white hover:shadow-lg',
+          'bg-[#4F8A3F] text-white hover:bg-[#3f7332] hover:shadow-lg',
+        accent: 'bg-[#E69500] text-white hover:bg-[#c77f00] hover:shadow-lg',
         outline:
-          'border-2 border-[#0f3d2e] text-[#0f3d2e] hover:bg-[#0f3d2e]/5 font-semibold',
-        ghost: 'text-[#0f3d2e] hover:bg-[#0f3d2e]/10 font-semibold',
+          'border border-[#1E5631] text-[#1E5631] hover:bg-[#EAF5E4] font-semibold',
+        ghost: 'text-[#1E5631] hover:bg-[#EAF5E4] font-semibold',
       },
       size: {
         sm: 'h-9 px-3 text-sm rounded-lg',

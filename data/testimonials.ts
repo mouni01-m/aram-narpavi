@@ -59,7 +59,6 @@ export const testimonials: Testimonial[] = [
     content:
       'Aram Narpavi Herbals products have transformed my skincare routine. The Kuppameni soap is incredibly gentle yet effective. I have seen visible improvements in my skin texture and clarity within just 2 weeks!',
     rating: 5,
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
   },
   {
     id: '2',
@@ -67,7 +66,6 @@ export const testimonials: Testimonial[] = [
     content:
       'The ABC Health Malt is a game-changer for my daily wellness. I feel more energized throughout the day, and my digestion has improved significantly. Highly recommend!',
     rating: 5,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
   },
   {
     id: '3',
@@ -75,7 +73,6 @@ export const testimonials: Testimonial[] = [
     content:
       'Finally, a soap that does not dry out my sensitive skin. The Charcoal soap removes impurities without stripping my skin. This brand truly understands herbal wellness.',
     rating: 5,
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
   },
   {
     id: '4',
@@ -83,7 +80,6 @@ export const testimonials: Testimonial[] = [
     content:
       'The Herbal Pain Balm has been a lifesaver for my muscle soreness after gym sessions. The traditional formulation really works. Quality products at great prices!',
     rating: 4,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
   },
   {
     id: '5',
@@ -91,6 +87,5 @@ export const testimonials: Testimonial[] = [
     content:
       'The Natural Honey is pure goodness. No additives, no preservatives. I use it in my morning tea and it has boosted my immunity. Aram Narpavi Herbals is my trusted brand now.',
     rating: 5,
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop',
   },
 ];

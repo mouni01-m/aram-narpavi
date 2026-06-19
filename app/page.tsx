@@ -2,9 +2,7 @@
 
 import { HeroSection } from '@/app/components/home/HeroSection';
 import { BrandStorySection } from '@/app/components/home/BrandStorySection';
-import { CategoriesSection } from '@/app/components/home/CategoriesSection';
 import { BestSellersSection } from '@/app/components/home/BestSellersSection';
-import { WhyChooseUsSection } from '@/app/components/home/WhyChooseUsSection';
 import { ProductBenefitsSection } from '@/app/components/home/ProductBenefitsSection';
 import { TestimonialsSection } from '@/app/components/home/TestimonialsSection';
 import { FAQSection } from '@/app/components/home/FAQSection';
@@ -15,9 +13,7 @@ export default function Home() {
     <>
       <HeroSection />
       <BrandStorySection />
-      <CategoriesSection />
       <BestSellersSection />
-      <WhyChooseUsSection />
       <ProductBenefitsSection />
       <TestimonialsSection />
       <FAQSection />

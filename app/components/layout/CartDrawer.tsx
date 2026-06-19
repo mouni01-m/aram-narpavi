@@ -1,107 +1,34 @@
 'use client';
 
-import React from 'react';
-import { X, Trash2, Plus, Minus } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
-import { Button } from '@/app/components/ui/Button';
 
-interface CartDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
-  const items = useCartStore((state) => state.items);
-  const removeFromCart = useCartStore((state) => state.removeFromCart);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const getTotalPrice = useCartStore((state) => state.getTotalPrice);
-
+export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { items, removeFromCart, updateQuantity, getTotalPrice } = useCartStore();
   return (
     <>
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-40 transition-opacity"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Drawer */}
-      <div
-        className={`fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-lg z-50 transition-transform duration-300 flex flex-col ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold text-[#0F3D2E]">Shopping Cart</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-            <X className="w-5 h-5" />
-          </button>
+      <button aria-label="Close cart" onClick={onClose} className={`fixed inset-0 z-40 bg-[#102d1b]/45 backdrop-blur-sm transition ${isOpen ? 'visible opacity-100' : 'invisible opacity-0'}`} />
+      <aside className={`fixed right-0 top-0 z-50 flex h-dvh w-full max-w-md flex-col bg-[#F8F7F2] shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`} aria-hidden={!isOpen}>
+        <div className="flex items-center justify-between border-b border-[#1E5631]/10 px-6 py-5">
+          <div><p className="eyebrow">Your selection</p><h2 className="mt-1 text-2xl font-bold text-[#1E5631]">Shopping bag</h2></div>
+          <button onClick={onClose} className="grid size-10 place-items-center rounded-full bg-white text-[#1E5631]" aria-label="Close cart"><X className="size-5" /></button>
         </div>
-
-        {/* Items */}
         <div className="flex-1 overflow-y-auto p-6">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full">
-              <p className="text-gray-600 text-center">Your cart is empty</p>
-              <Button variant="primary" size="md" className="mt-4" onClick={onClose}>
-                Continue Shopping
-              </Button>
-            </div>
+            <div className="flex h-full flex-col items-center justify-center text-center"><span className="grid size-16 place-items-center rounded-full bg-[#EAF5E4]"><ShoppingBag className="size-7 text-[#4F8A3F]" /></span><h3 className="mt-5 text-2xl font-bold text-[#1E5631]">Your bag is empty</h3><p className="mt-2 max-w-xs text-sm text-[#607065]">Choose a herbal essential and it will appear here.</p><Link href="/#products" onClick={onClose} className="mt-6 rounded-full bg-[#1E5631] px-6 py-3 text-sm font-bold text-white">Explore products</Link></div>
           ) : (
-            <div className="space-y-4">
-              {items.map((item) => (
-                <div key={item.id} className="flex gap-4 pb-4 border-b">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                    <p className="text-sm text-gray-600">₹{item.price}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="p-1 hover:bg-gray-100 rounded"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-6 text-center font-semibold">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-1 hover:bg-gray-100 rounded"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="ml-auto p-1 hover:bg-red-50 rounded text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="space-y-4">{items.map((item) => (
+              <div key={item.id} className="flex gap-4 rounded-2xl border border-[#1E5631]/10 bg-white p-3">
+                <Link href={`/product/${item.slug}`} onClick={onClose} className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-[#EAF5E4]"><Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" /></Link>
+                <div className="min-w-0 flex-1"><Link href={`/product/${item.slug}`} onClick={onClose} className="font-display text-lg font-bold text-[#1E5631]">{item.name}</Link><p className="mt-1 text-sm font-bold text-[#4F8A3F]">₹{item.price}</p><div className="mt-3 flex items-center gap-2"><button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="grid size-7 place-items-center rounded-full bg-[#F8F7F2]" aria-label="Decrease quantity"><Minus className="size-3.5" /></button><span className="w-5 text-center text-sm font-bold">{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="grid size-7 place-items-center rounded-full bg-[#F8F7F2]" aria-label="Increase quantity"><Plus className="size-3.5" /></button><button onClick={() => removeFromCart(item.id)} className="ml-auto text-[#9b4a39]" aria-label={`Remove ${item.name}`}><Trash2 className="size-4" /></button></div></div>
+              </div>
+            ))}</div>
           )}
         </div>
-
-        {/* Footer */}
-        {items.length > 0 && (
-          <div className="p-6 border-t space-y-4">
-            <div className="flex items-center justify-between text-lg font-bold">
-              <span>Total:</span>
-              <span className="text-[#0F3D2E]">₹{getTotalPrice()}</span>
-            </div>
-            <Button variant="primary" size="lg" className="w-full">
-              Checkout
-            </Button>
-          </div>
-        )}
-      </div>
+        {items.length > 0 && <div className="border-t border-[#1E5631]/10 bg-white p-6"><div className="mb-4 flex items-center justify-between"><span className="text-sm text-[#607065]">Subtotal</span><strong className="font-display text-2xl text-[#1E5631]">₹{getTotalPrice()}</strong></div><button className="w-full rounded-full bg-[#1E5631] py-3.5 font-bold text-white">Proceed to checkout</button><p className="mt-3 text-center text-xs text-[#718076]">Taxes and delivery calculated at checkout</p></div>}
+      </aside>
     </>
   );
-};
+}
