@@ -8,11 +8,13 @@ import { Container } from '@/app/components/ui/Container';
 import { CartDrawer } from './CartDrawer';
 
 const navLinks = [
+  
+  { href: '/#story', label: 'About us' },
   { href: '/#products', label: 'Shop' },
-  { href: '/#story', label: 'Our Story' },
   { href: '/#benefits', label: 'Benefits' },
   { href: '/#testimonials', label: 'Reviews' },
   { href: '/#faq', label: 'FAQ' },
+  { href: '/#contact', label: 'Contact' },
 ];
 
 export function Navbar() {
