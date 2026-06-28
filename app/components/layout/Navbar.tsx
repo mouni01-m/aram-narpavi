@@ -48,10 +48,10 @@ export function Navbar() {
   <Image
     src="/logo/aram_logo.png"
     alt="Aram Narpavi Herbals"
-    width={250}
-    height={250}
+    width={240}
+    height={240}
     priority
-className="h-60 w-60 object-contain -mt-2"  />
+className="h-40 w-40 object-contain -mt-2"  />
 
   <div className="leading-none">
     {/* <h1 className="font-bold text-4xl">
