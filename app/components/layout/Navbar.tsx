@@ -46,16 +46,15 @@ export function Navbar() {
   aria-label="Aram Narpavi Herbals Home"
 >
   <Image
-    src="/logo/aram-logo.png"
+    src="/logo/aram_logo.png"
     alt="Aram Narpavi Herbals"
-    width={90}
-    height={90}
+    width={250}
+    height={250}
     priority
-    className="h-20 w-20 object-contain"
-  />
+className="h-60 w-60 object-contain -mt-2"  />
 
   <div className="leading-none">
-    <h1 className="font-bold text-4xl">
+    {/* <h1 className="font-bold text-4xl">
       <span style={{ color: "#E69500" }}>ARAM</span>{" "}
       <span style={{ color: "#1E5631" }}>NARPAVI</span>
     </h1>
@@ -65,7 +64,7 @@ export function Navbar() {
       style={{ color: "#E69500" }}
     >
       HERBALS
-    </p>
+    </p> */}
   </div>
 </Link>
             {/* Desktop Navigation */}

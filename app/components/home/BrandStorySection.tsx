@@ -10,7 +10,7 @@ const pillars = [
   { icon: Heart, title: 'Mission', text: 'Make honest, natural wellness simple enough for every daily ritual.' },
   { icon: Eye, title: 'Vision', text: 'Build a trusted herbal brand that cares for people and the planet.' },
 ];
-const stats = [['10+', 'Years'], ['50+', 'Products'], ['100K+', 'Customers'], ['100%', 'Natural']];
+const stats = [['10+', 'Years'], ['20+', 'Products'], ['10K+', 'Customers'], ['100%', 'Natural']];
 
 export function BrandStorySection() {
   return <section id="story" className="bg-white py-20"><Container><div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
