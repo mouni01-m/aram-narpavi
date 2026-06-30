@@ -22,8 +22,7 @@ import { useCartStore } from '@/store/cartStore';
 import { Container } from '@/app/components/ui/Container';
 import { ProductCard } from './ProductCard';
 import { Rating } from '@/app/components/ui/Rating';
-import { testimonials } from '@/data/testimonials';
-
+import ReviewSection from '@/app/components/reviews/ReviewSection';
 
 
 export function ProductDetails({ product, related }: { product: Product; related: Product[] }) {
@@ -113,7 +112,11 @@ const [selectedImage, setSelectedImage] = useState(
       </motion.div>
     </div></Container></section>
     <section className="bg-white py-20"><Container><p className="eyebrow">Every angle</p><h2 className="section-title mt-3">Product gallery</h2><div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-3">{product.images.map((image,index) => <button onClick={() => {selectImage(index); window.scrollTo({top:0,behavior:'smooth'});}} key={image} className={`relative overflow-hidden rounded-2xl bg-[#F8F7F2] ${index === 0 ? 'col-span-2 aspect-[2/1] lg:col-span-2' : 'aspect-square'}`}><Image src={image} alt={`${product.name} gallery image ${index+1}`} fill sizes="(max-width: 767px) 50vw, 33vw" className="object-cover transition-transform duration-500 hover:scale-105" /></button>)}</div></Container></section>
-    <section className="bg-[#EAF5E4] py-20"><Container><div className="text-center"><p className="eyebrow">Customer reviews</p><h2 className="section-title mt-3">Trusted in daily routines.</h2></div><div className="mx-auto mt-9 grid max-w-5xl gap-5 md:grid-cols-3">{testimonials.filter(item => ['1','3','4'].includes(item.id)).map((review) => <figure key={review.id} className="rounded-2xl bg-white p-6"><Rating rating={review.rating} size="sm" /><blockquote className="mt-4 text-sm leading-6 text-[#56685c]">“{review.content}”</blockquote><figcaption className="mt-5 font-display font-bold text-[#1E5631]">{review.author}<span className="ml-2 font-sans text-xs font-medium text-[#607065]">Verified customer</span></figcaption></figure>)}</div></Container></section>
-    <section className="bg-[#F8F7F2] py-20"><Container><div className="flex items-end justify-between gap-5"><div><p className="eyebrow">Continue exploring</p><h2 className="section-title mt-3">You may also like</h2></div><Link href="/#products" className="hidden text-sm font-bold text-[#1E5631] sm:block">View all products</Link></div><div className="mt-9 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">{related.map(item => <ProductCard key={item.id} product={item} />)}</div></Container></section>
+   
+   <section className="bg-[#EAF5E4] py-20">
+  <Container>
+<ReviewSection productId={product.slug} />
+  </Container>
+</section>
   </div>;
 }
