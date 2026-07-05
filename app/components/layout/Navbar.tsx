@@ -32,6 +32,8 @@ export function Navbar() {
     };
   }, []);
 
+  
+
   return (
     <>
       <nav className="sticky top-0 z-50 border-b border-[#1E5631]/10 bg-[#F8F7F2]/95 backdrop-blur-xl shadow-sm">
@@ -86,97 +88,81 @@ className="h-40 w-40 object-contain -mt-2"  />
               ))}
             </div>
 
-            {/* Right Side */}
-            <div className="flex items-center gap-3">
+          {/* Right Side */}
+<div className="flex items-center gap-4">
 
-              {/* Cart */}
-              <button
-                onClick={() => setCartOpen(true)}
-                className="
-                  relative
-                  grid
-                  size-11
-                  place-items-center
-                  rounded-full
-                  border
-                  border-[#1E5631]/15
-                  bg-white
-                  text-[#1E5631]
-                  transition-all
-                  hover:bg-[#EAF5E4]
-                "
-                aria-label={`Open cart with ${totalItems} items`}
-              >
-                <ShoppingBag className="size-5" />
+  {/* Desktop Login */}
+  <Link
+    href="/login"
+    className="hidden lg:block text-sm font-semibold text-[#1E5631] hover:text-[#E69500] transition"
+  >
+    Login
+  </Link>
 
-                {totalItems > 0 && (
-                  <span className="
-                    absolute
-                    -right-1
-                    -top-1
-                    grid
-                    size-5
-                    place-items-center
-                    rounded-full
-                    bg-[#E69500]
-                    text-[10px]
-                    font-bold
-                    text-white
-                  ">
-                    {totalItems}
-                  </span>
-                )}
-              </button>
+  {/* Desktop Signup */}
+  <Link
+    href="/signup"
+    className="hidden lg:inline-flex items-center rounded-full bg-[#1E5631] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#174526] transition"
+  >
+    Sign Up
+  </Link>
 
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMenuOpen((open) => !open)}
-                className="
-                  grid
-                  size-11
-                  place-items-center
-                  rounded-full
-                  text-[#1E5631]
-                  lg:hidden
-                "
-                aria-label="Toggle menu"
-              >
-                {menuOpen ? (
-                  <X className="size-5" />
-                ) : (
-                  <Menu className="size-5" />
-                )}
-              </button>
-            </div>
+  {/* Cart */}
+  <button
+    onClick={() => setCartOpen(true)}
+    className="
+      relative
+      grid
+      size-11
+      place-items-center
+      rounded-full
+      border
+      border-[#1E5631]/15
+      bg-white
+      text-[#1E5631]
+      transition-all
+      hover:bg-[#EAF5E4]
+    "
+    aria-label={`Open cart with ${totalItems} items`}
+  >
+    <ShoppingBag className="size-5" />
+
+    {totalItems > 0 && (
+      <span
+        className="
+          absolute
+          -right-1
+          -top-1
+          grid
+          size-5
+          place-items-center
+          rounded-full
+          bg-[#E69500]
+          text-[10px]
+          font-bold
+          text-white
+        "
+      >
+        {totalItems}
+      </span>
+    )}
+  </button>
+
+  {/* Mobile Menu */}
+  <button
+    onClick={() => setMenuOpen((open) => !open)}
+    className="grid size-11 place-items-center rounded-full text-[#1E5631] lg:hidden"
+    aria-label="Toggle menu"
+  >
+    {menuOpen ? (
+      <X className="size-5" />
+    ) : (
+      <Menu className="size-5" />
+    )}
+  </button>
+
+</div>
           </div>
-
-          {/* Mobile Menu */}
-          {menuOpen && (
-            <div className="border-t border-[#1E5631]/10 py-4 lg:hidden">
-
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="
-                    block
-                    rounded-xl
-                    px-4
-                    py-3
-                    font-semibold
-                    text-[#1E5631]
-                    transition-all
-                    hover:bg-[#EAF5E4]
-                    hover:text-[#E69500]
-                  "
-                >
-                  {link.label}
-                </Link>
-              ))}
-
-            </div>
-          )}
         </Container>
       </nav>
 
