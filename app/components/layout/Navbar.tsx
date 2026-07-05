@@ -12,7 +12,6 @@ const navLinks = [
   { href: '/#story', label: 'About Us' },
   { href: '/#products', label: 'Shop' },
   { href: '/#benefits', label: 'Benefits' },
-  { href: '/#testimonials', label: 'Reviews' },
   { href: '/#faq', label: 'FAQ' },
   { href: '/#contact', label: 'Contact' },
 ];
