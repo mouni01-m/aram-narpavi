@@ -1,4 +1,8 @@
-export type Address = { id: string; label: string; line1: string; city: string; state: string; postalCode: string };
+export type Address = {
+  id: string; fullName: string; phone: string; houseNo: string; street: string; area: string;
+  landmark: string; city: string; district: string; state: string; country: string; pincode: string;
+  type: "Home" | "Office" | "Other"; isDefault: boolean;
+};
 
 export type CustomerProfile = {
   uid: string; name: string; email: string; phone: string; gender: string; dob: string; photoURL: string;

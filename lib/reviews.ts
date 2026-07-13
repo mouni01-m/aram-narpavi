@@ -20,6 +20,12 @@ export interface ReviewData {
   video: string;
 }
 
+export interface ReviewRecord extends ReviewData {
+  id: string;
+  uid?: string;
+  createdAt?: { seconds?: number; nanoseconds?: number } | number | string | Date;
+}
+
 /**
  * Add Review
  */
@@ -45,7 +51,7 @@ export async function addReview(
  */
 export function getReviews(
   productId: string,
-  callback: (reviews: any[]) => void
+  callback: (reviews: ReviewRecord[]) => void
 ) {
   const reviewsRef = collection(
     db,
@@ -60,10 +66,15 @@ export function getReviews(
   );
 
   return onSnapshot(q, (snapshot) => {
-    const reviews = snapshot.docs.map((doc) => ({
+    const reviews: ReviewRecord[] = snapshot.docs.map((doc) => ({
       id: doc.id,
+      name: "",
+      rating: 0,
+      comment: "",
+      images: [],
+      video: "",
       ...doc.data(),
-    }));
+    })) as ReviewRecord[];
 
     callback(reviews);
   });

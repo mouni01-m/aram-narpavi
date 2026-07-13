@@ -11,7 +11,7 @@ interface ReviewCardProps {
     comment: string;
     images?: string[];
     video?: string;
-    createdAt?: any;
+    createdAt?: { seconds?: number; nanoseconds?: number } | number | string | Date;
   };
 }
 
@@ -92,11 +92,17 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       {/* Date */}
       {review.createdAt && (
         <p className="mt-5 text-sm text-gray-500">
-          {new Date(
-            review.createdAt.seconds
-              ? review.createdAt.seconds * 1000
-              : review.createdAt
-          ).toLocaleDateString()}
+          {(() => {
+            if (typeof review.createdAt === 'object' && review.createdAt !== null && 'seconds' in review.createdAt && typeof review.createdAt.seconds === 'number') {
+              return new Date(review.createdAt.seconds * 1000).toLocaleDateString();
+            }
+
+            if (review.createdAt instanceof Date) {
+              return review.createdAt.toLocaleDateString();
+            }
+
+            return new Date(String(review.createdAt)).toLocaleDateString();
+          })()}
         </p>
       )}
 

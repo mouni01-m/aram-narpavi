@@ -27,7 +27,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             ))}</div>
           )}
         </div>
-        {items.length > 0 && <div className="border-t border-[#1E5631]/10 bg-white p-6"><div className="mb-4 flex items-center justify-between"><span className="text-sm text-[#607065]">Subtotal</span><strong className="font-display text-2xl text-[#1E5631]">₹{getTotalPrice()}</strong></div><button className="w-full rounded-full bg-[#1E5631] py-3.5 font-bold text-white">Proceed to checkout</button><p className="mt-3 text-center text-xs text-[#718076]">Taxes and delivery calculated at checkout</p></div>}
+        {items.length > 0 && <div className="border-t border-[#1E5631]/10 bg-white p-6"><div className="mb-4 flex items-center justify-between"><span className="text-sm text-[#607065]">Subtotal</span><strong className="font-display text-2xl text-[#1E5631]">₹{getTotalPrice()}</strong></div><Link href="/checkout" onClick={onClose} className="flex w-full items-center justify-center rounded-full bg-[#1E5631] py-3.5 font-bold text-white">Proceed to checkout</Link><p className="mt-3 text-center text-xs text-[#718076]">Taxes and delivery calculated at checkout</p></div>}
       </aside>
     </>
   );

@@ -20,12 +20,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Product } from '@/types/product';
 import { useCartStore } from '@/store/cartStore';
 import { Container } from '@/app/components/ui/Container';
-import { ProductCard } from './ProductCard';
 import { Rating } from '@/app/components/ui/Rating';
 import ReviewSection from '@/app/components/reviews/ReviewSection';
 
 
-export function ProductDetails({ product, related }: { product: Product; related: Product[] }) {
+export function ProductDetails({ product }: { product: Product; related: Product[] }) {
 const [currentIndex, setCurrentIndex] = useState(0);
 
 const [selectedImage, setSelectedImage] = useState(

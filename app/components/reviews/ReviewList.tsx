@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getReviews } from '@/lib/reviews';
+import { getReviews, type ReviewRecord } from '@/lib/reviews';
 import ReviewCard from './ReviewCard';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function ReviewList({ productId }: Props) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

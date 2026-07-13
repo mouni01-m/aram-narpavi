@@ -5,14 +5,14 @@ import { Star } from 'lucide-react';
 
 import ReviewForm from './ReviewForm';
 import ReviewList from './ReviewList';
-import { getReviews } from '@/lib/reviews';
+import { getReviews, type ReviewRecord } from '@/lib/reviews';
 
 interface Props {
   productId: string;
 }
 
 export default function ReviewSection({ productId }: Props) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
 
   useEffect(() => {
     const unsubscribe = getReviews(productId, (data) => {
