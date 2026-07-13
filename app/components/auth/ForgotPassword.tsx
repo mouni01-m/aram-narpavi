@@ -1,0 +1,10 @@
+"use client";
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+
+export function ForgotPassword({ onBack }: { onBack: () => void }) {
+  const { forgotPassword } = useAuth(); const [email, setEmail] = useState(""); const [status, setStatus] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(false);
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); setError(""); setStatus(""); if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Enter a valid email address."); setLoading(true); try { await forgotPassword(email.trim()); setStatus("Password reset instructions have been sent to your email."); } catch (err) { setError(err instanceof Error ? err.message.replace("Firebase: ", "") : "Unable to send reset email."); } finally { setLoading(false); } };
+  return <form onSubmit={submit} className="space-y-5"><button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold text-[#4F8A3F] hover:text-[#1E5631]"><ArrowLeft className="size-4"/>Back to login</button><p className="text-sm leading-6 text-[#173522]/65">Enter your account email and we&apos;ll send you a secure link to reset your password.</p><div><label className="text-sm font-semibold">Email address</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-[#1E5631]/20 px-3.5 py-3 text-sm outline-none focus:border-[#4F8A3F] focus:ring-3 focus:ring-[#4F8A3F]/15" placeholder="you@example.com" required/></div>{error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}{status && <p role="status" className="rounded-lg bg-[#EAF5E4] px-3 py-2 text-xs text-[#1E5631]">{status}</p>}<button disabled={loading} className="w-full rounded-lg bg-[#1E5631] py-3 text-sm font-bold text-white disabled:opacity-60">{loading ? "Sending..." : "Send reset link"}</button></form>;
+}

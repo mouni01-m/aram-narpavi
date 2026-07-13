@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, ShoppingBag, X } from 'lucide-react';
+import { ChevronDown, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { Container } from '@/app/components/ui/Container';
 import { CartDrawer } from './CartDrawer';
+import { AuthModal } from '@/app/components/auth/AuthModal';
+import { ProfileDropdown } from '@/app/components/auth/ProfileDropdown';
+import { useAuth } from '@/hooks/useAuth';
 
 const navLinks = [
   { href: '/#story', label: 'About Us' },
@@ -19,6 +22,9 @@ const navLinks = [
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const { user, profile, loading } = useAuth();
 
   const totalItems = useCartStore((state) => state.getTotalItems());
 
@@ -91,21 +97,23 @@ className="h-40 w-40 object-contain -mt-2"  />
           {/* Right Side */}
 <div className="flex items-center gap-4">
 
-  {/* Desktop Login */}
-  <Link
-    href="/login"
-    className="hidden lg:block text-sm font-semibold text-[#1E5631] hover:text-[#E69500] transition"
-  >
-    Login
-  </Link>
-
-  {/* Desktop Signup */}
-  <Link
-    href="/signup"
-    className="hidden lg:inline-flex items-center rounded-full bg-[#1E5631] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#174526] transition"
-  >
-    Sign Up
-  </Link>
+  <div className="relative" onMouseLeave={() => setAccountOpen(false)}>
+    <button
+      type="button"
+      onMouseEnter={() => user && setAccountOpen(true)}
+      onClick={() => user ? setAccountOpen((open) => !open) : setAuthOpen(true)}
+      className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-left text-[#1E5631] transition hover:bg-[#EAF5E4]"
+      aria-haspopup={user ? "menu" : "dialog"}
+      aria-expanded={user ? accountOpen : undefined}
+    >
+      <span className="grid size-8 place-items-center rounded-full bg-[#EAF5E4]"><UserRound className="size-4" /></span>
+      <span className="hidden sm:block leading-tight">
+        {loading ? <span className="block h-3 w-16 animate-pulse rounded bg-[#1E5631]/10" /> : user ? <><span className="block text-[10px] font-medium text-[#173522]/60">Hello,</span><span className="block max-w-24 truncate text-xs font-bold">{profile?.name || user.displayName || "Customer"}</span></> : <span className="text-sm font-bold">Account</span>}
+      </span>
+      {user && <ChevronDown className="hidden size-4 sm:block" />}
+    </button>
+    {user && accountOpen && <div className="absolute right-0 top-full z-50 mt-2"><ProfileDropdown onNavigate={() => setAccountOpen(false)} /></div>}
+  </div>
 
   {/* Cart */}
   <button
@@ -170,6 +178,7 @@ className="h-40 w-40 object-contain -mt-2"  />
         isOpen={cartOpen}
         onClose={() => setCartOpen(false)}
       />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
 }

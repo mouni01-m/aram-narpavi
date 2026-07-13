@@ -1,102 +1,15 @@
-'use client';
+"use client";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { signup, googleLogin } from '@/lib/auth';
+type Props = { onLogin: () => void; onSuccess: () => void };
+type FormState = { name: string; email: string; phone: string; password: string; confirmPassword: string; gender: string; dob: string; referral: string; terms: boolean };
+const input = "mt-1 w-full rounded-lg border border-[#1E5631]/20 bg-white px-3.5 py-3 text-sm text-[#173522] outline-none transition placeholder:text-[#173522]/40 focus:border-[#4F8A3F] focus:ring-3 focus:ring-[#4F8A3F]/15";
+const initial: FormState = { name: "", email: "", phone: "", password: "", confirmPassword: "", gender: "", dob: "", referral: "", terms: false };
 
-export default function SignupForm() {
-  const router = useRouter();
-
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const [loading, setLoading] = useState(false);
-
-  async function handleSignup(e: React.FormEvent) {
-    e.preventDefault();
-
-    try {
-      setLoading(true);
-
-      await signup(name, email, password);
-
-      alert('Account Created Successfully 🎉');
-
-      router.push('/');
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleGoogle() {
-    try {
-      await googleLogin();
-
-      router.push('/');
-    } catch (err: any) {
-      alert(err.message);
-    }
-  }
-
-  return (
-    <div className="max-w-md mx-auto rounded-2xl bg-white p-8 shadow-lg">
-
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Create Account
-      </h1>
-
-      <form onSubmit={handleSignup} className="space-y-4">
-
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e)=>setName(e.target.value)}
-          required
-          className="w-full rounded-xl border p-3"
-        />
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e)=>setEmail(e.target.value)}
-          required
-          className="w-full rounded-xl border p-3"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e)=>setPassword(e.target.value)}
-          required
-          className="w-full rounded-xl border p-3"
-        />
-
-        <button
-          className="w-full rounded-xl bg-green-700 py-3 text-white font-bold"
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create Account"}
-        </button>
-
-      </form>
-
-      <div className="my-5 text-center">
-        OR
-      </div>
-
-      <button
-        onClick={handleGoogle}
-        className="w-full rounded-xl border py-3 font-bold"
-      >
-        Continue with Google
-      </button>
-
-    </div>
-  );
+export default function SignupForm({ onLogin, onSuccess }: Props) {
+  const { signup } = useAuth(); const [form, setForm] = useState(initial); const [error, setError] = useState(""); const [loading, setLoading] = useState(false);
+  const set = (key: keyof FormState, value: string | boolean) => setForm((current) => ({ ...current, [key]: value }));
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); setError(""); if (!/^\S+@\S+\.\S+$/.test(form.email)) return setError("Enter a valid email address."); if (!/^[6-9]\d{9}$/.test(form.phone.replace(/\D/g, ""))) return setError("Enter a valid 10-digit phone number."); if (form.password.length < 6) return setError("Password must contain at least 6 characters."); if (form.password !== form.confirmPassword) return setError("Passwords do not match."); if (!form.terms) return setError("Please accept the terms to continue."); setLoading(true); try { await signup({ name: form.name.trim(), email: form.email.trim(), phone: form.phone.replace(/\D/g, ""), password: form.password, gender: form.gender, dob: form.dob }); onSuccess(); } catch (err) { setError(err instanceof Error ? err.message.replace("Firebase: ", "") : "Unable to create your account."); } finally { setLoading(false); } };
+  return <form onSubmit={submit} noValidate className="space-y-3"><div><label className="text-sm font-semibold">Full name</label><input className={input} value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="Your full name"/></div><div className="grid gap-3 sm:grid-cols-2"><div><label className="text-sm font-semibold">Email</label><input className={input} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="you@example.com"/></div><div><label className="text-sm font-semibold">Phone number</label><input className={input} type="tel" inputMode="numeric" value={form.phone} onChange={(e) => set("phone", e.target.value)} required placeholder="9876543210"/></div></div><div className="grid gap-3 sm:grid-cols-2"><div><label className="text-sm font-semibold">Password</label><input className={input} type="password" autoComplete="new-password" value={form.password} onChange={(e) => set("password", e.target.value)} required/></div><div><label className="text-sm font-semibold">Confirm password</label><input className={input} type="password" autoComplete="new-password" value={form.confirmPassword} onChange={(e) => set("confirmPassword", e.target.value)} required/></div></div><div className="grid gap-3 sm:grid-cols-2"><div><label className="text-sm font-semibold">Gender <span className="font-normal text-[#173522]/50">(optional)</span></label><select className={input} value={form.gender} onChange={(e) => set("gender", e.target.value)}><option value="">Select</option><option>Female</option><option>Male</option><option>Prefer not to say</option></select></div><div><label className="text-sm font-semibold">Date of birth <span className="font-normal text-[#173522]/50">(optional)</span></label><input className={input} type="date" value={form.dob} onChange={(e) => set("dob", e.target.value)}/></div></div><div><label className="text-sm font-semibold">Referral code <span className="font-normal text-[#173522]/50">(optional)</span></label><input className={input} value={form.referral} onChange={(e) => set("referral", e.target.value)} placeholder="Enter code"/></div><label className="flex items-start gap-2 text-xs leading-5 text-[#173522]/75"><input type="checkbox" checked={form.terms} onChange={(e) => set("terms", e.target.checked)} className="mt-1 size-4 accent-[#1E5631]"/>I accept the Terms of Service and Privacy Policy.</label>{error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}<button disabled={loading} className="w-full rounded-lg bg-[#1E5631] py-3 text-sm font-bold text-white transition hover:bg-[#174526] disabled:opacity-60">{loading ? "Creating account..." : "Create Account"}</button><p className="text-center text-sm text-[#173522]/65">Already have an account? <button type="button" onClick={onLogin} className="font-bold text-[#1E5631] hover:text-[#E69500]">Login</button></p></form>;
 }
