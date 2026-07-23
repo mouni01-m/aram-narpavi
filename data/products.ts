@@ -6,7 +6,7 @@ export const products: Product[] = [
     slug: 'kuppameni-soap',
     name: 'Kuppameni Soap',
     category: 'soaps',
-    price: 129,
+    price: 120,
     rating: 4.8,
     reviews: 125,
     description: 'Traditional Kuppameni herb soap for gentle cleansing and natural glow',

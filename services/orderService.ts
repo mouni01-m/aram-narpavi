@@ -16,7 +16,7 @@ export async function createOrder(input: { customer: OrderCustomer; address: Add
 
   await runTransaction(db, async (transaction) => {
     for (const item of input.items) {
-      const productRef = doc(db, "products", item.id);
+      const productRef = doc(db, "products", item.slug);
       const product = await transaction.get(productRef);
 
       if (!product.exists()) {
@@ -65,7 +65,7 @@ export async function cancelOrder(id: string) {
     if (orderData.status === "Cancelled") return;
 
     for (const item of orderData.items ?? []) {
-      const productRef = doc(db, "products", item.id);
+      const productRef = doc(db, "products", item.slug);
       const productSnapshot = await transaction.get(productRef);
       if (!productSnapshot.exists()) continue;
       const stock = productSnapshot.data()?.stock;
