@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronDown, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
+import { ChevronDown, Heart, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { getWishlist } from '@/services/wishlistService';
 import { Container } from '@/app/components/ui/Container';
 import { CartDrawer } from './CartDrawer';
 import { AuthModal } from '@/app/components/auth/AuthModal';
@@ -12,9 +13,9 @@ import { ProfileDropdown } from '@/app/components/auth/ProfileDropdown';
 import { useAuth } from '@/hooks/useAuth';
 
 const navLinks = [
+  { href: '/#HeroSection.tsx', label: 'Home' },
   { href: '/#story', label: 'About Us' },
   { href: '/#products', label: 'Shop' },
-  { href: '/#benefits', label: 'Benefits' },
   { href: '/#faq', label: 'FAQ' },
   { href: '/#contact', label: 'Contact' },
 ];
@@ -24,19 +25,41 @@ export function Navbar() {
   const [cartOpen, setCartOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const { user, profile, loading } = useAuth();
 
   const totalItems = useCartStore((state) => state.getTotalItems());
 
+  const loadWishlistCount = async () => {
+    if (!user) {
+      setWishlistCount(0);
+      return;
+    }
+
+    try {
+      const wishlist = await getWishlist(user.uid);
+      setWishlistCount(wishlist.length);
+    } catch (error) {
+      console.error('Error loading wishlist count:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadWishlistCount();
+  }, [user]);
+
   useEffect(() => {
     const openCart = () => setCartOpen(true);
+    const updateWishlist = () => loadWishlistCount();
 
     window.addEventListener('open-cart', openCart);
+    window.addEventListener('wishlist-updated', updateWishlist);
 
     return () => {
       window.removeEventListener('open-cart', openCart);
+      window.removeEventListener('wishlist-updated', updateWishlist);
     };
-  }, []);
+  }, [user]);
 
   
 
@@ -155,6 +178,53 @@ className="h-40 w-40 object-contain -mt-2"  />
       </span>
     )}
   </button>
+
+  {/* Wishlist */}
+  <Link
+    href={user ? '/profile?tab=wishlist' : '#'}
+    onClick={(e) => {
+      if (!user) {
+        e.preventDefault();
+        setAuthOpen(true);
+      }
+    }}
+    className="
+      relative
+      grid
+      size-11
+      place-items-center
+      rounded-full
+      border
+      border-[#1E5631]/15
+      bg-white
+      text-[#1E5631]
+      transition-all
+      hover:bg-[#EAF5E4]
+    "
+    aria-label={`Wishlist with ${wishlistCount} items`}
+  >
+    <Heart className="size-5" />
+
+    {wishlistCount > 0 && (
+      <span
+        className="
+          absolute
+          -right-1
+          -top-1
+          grid
+          size-5
+          place-items-center
+          rounded-full
+          bg-red-500
+          text-[10px]
+          font-bold
+          text-white
+        "
+      >
+        {wishlistCount}
+      </span>
+    )}
+  </Link>
 
   {/* Mobile Menu */}
   <button

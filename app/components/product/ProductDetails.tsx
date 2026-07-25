@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronRight as ChevronRightIcon,
+  Heart,
   Leaf,
   Minus,
   Plus,
@@ -19,12 +20,19 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { Product } from '@/types/product';
 import { useCartStore } from '@/store/cartStore';
+import { useAuth } from '@/hooks/useAuth';
 import { Container } from '@/app/components/ui/Container';
 import { Rating } from '@/app/components/ui/Rating';
 import ReviewSection from '@/app/components/reviews/ReviewSection';
+import {
+  addToWishlist,
+  removeFromWishlist,
+  isWishlisted,
+} from '@/services/wishlistService';
 
 
 export function ProductDetails({ product }: { product: Product; related: Product[] }) {
+const { user } = useAuth();
 const [currentIndex, setCurrentIndex] = useState(0);
 
 const [selectedImage, setSelectedImage] = useState(
@@ -33,14 +41,50 @@ const [selectedImage, setSelectedImage] = useState(
   const touchStartX = useRef<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
   const addToCart = useCartStore((state) => state.addToCart);
   const imageCount = product.images.length;
+
+  useEffect(() => {
+    if (!user) {
+      setWishlisted(false);
+      return;
+    }
+
+    isWishlisted(user.uid, product.slug)
+      .then(setWishlisted)
+      .catch(console.error);
+  }, [user, product.slug]);
 
   function add(openCart = false) {
     addToCart(product, quantity);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2200);
     if (openCart) window.dispatchEvent(new Event('open-cart'));
+  }
+
+  async function toggleWishlist() {
+    if (!user) {
+      alert('Please login first.');
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      if (wishlisted) {
+        await removeFromWishlist(user.uid, product.slug);
+        setWishlisted(false);
+      } else {
+        await addToWishlist(user.uid, product);
+        setWishlisted(true);
+      }
+      window.dispatchEvent(new Event('wishlist-updated'));
+    } catch (error) {
+      console.error('Wishlist error:', error);
+    } finally {
+      setWishlistLoading(false);
+    }
   }
 
   const selectImage = useCallback((index: number) => {
@@ -107,6 +151,14 @@ const [selectedImage, setSelectedImage] = useState(
         <div className="rounded-2xl bg-[#EAF5E4] p-5"><h2 className="flex items-center gap-2 text-lg font-bold text-[#1E5631]"><Leaf className="size-5" />How to use</h2><p className="mt-2 text-sm leading-6 text-[#526359]">{product.usage}</p></div>
         <div className="mt-6 flex items-center gap-3"><span className="text-sm font-bold text-[#1E5631]">Quantity</span><div className="flex items-center rounded-full border border-[#1E5631]/15 bg-white p-1"><button onClick={() => setQuantity(q => Math.max(1,q-1))} className="grid size-9 place-items-center rounded-full hover:bg-[#EAF5E4]" aria-label="Decrease quantity"><Minus className="size-4" /></button><span className="w-10 text-center font-bold">{quantity}</span><button onClick={() => setQuantity(q => q+1)} className="grid size-9 place-items-center rounded-full hover:bg-[#EAF5E4]" aria-label="Increase quantity"><Plus className="size-4" /></button></div>{added && <span role="status" className="text-sm font-bold text-[#4F8A3F]">Added to cart</span>}</div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2"><button onClick={() => add(false)} className="inline-flex items-center justify-center gap-2 rounded-full border border-[#1E5631] px-6 py-3.5 font-bold text-[#1E5631] transition hover:bg-[#EAF5E4]"><ShoppingBag className="size-4" />Add to cart</button><button onClick={() => add(true)} className="rounded-full bg-[#1E5631] px-6 py-3.5 font-bold text-white transition hover:bg-[#174526]">Buy now</button></div>
+        <div className="mt-3"><button onClick={toggleWishlist} disabled={wishlistLoading} className={`inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 font-bold transition ${
+          wishlisted
+            ? 'border border-red-500 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-60'
+            : 'border border-[#1E5631]/20 bg-white text-[#1E5631] hover:bg-[#EAF5E4] disabled:opacity-60'
+        }`}>
+          <Heart className={`size-4 ${wishlisted ? 'fill-red-500' : ''}`} />
+          {wishlisted ? '❤️ Wishlisted' : '❤️ Add to Wishlist'}
+        </button></div>
         <div className="mt-6 grid grid-cols-2 gap-3 border-t border-[#1E5631]/10 pt-6 text-xs font-semibold text-[#607065]"><span className="flex items-center gap-2"><Truck className="size-4 text-[#4F8A3F]" />Fast delivery across India</span><span className="flex items-center gap-2"><ShieldCheck className="size-4 text-[#4F8A3F]" />Quality checked</span></div>
       </motion.div>
     </div></Container></section>

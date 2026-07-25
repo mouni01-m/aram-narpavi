@@ -1,6 +1,23 @@
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CustomerProfile } from "@/lib/user";
+import {
+  collection,
+  getDocs,
+} from "firebase/firestore";
+
+import type { Address } from "@/lib/user";
+
+export async function getUserAddresses(uid: string): Promise<Address[]> {
+  const snapshot = await getDocs(
+    collection(db, "users", uid, "addresses")
+  );
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Address[];
+}
 
 export async function getUserProfile(uid: string) {
   const snapshot = await getDoc(doc(db, "users", uid));

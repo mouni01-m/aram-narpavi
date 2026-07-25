@@ -1,5 +1,5 @@
 "use client";
-import { collection, doc, getDocs, limit, orderBy, query, runTransaction, serverTimestamp, updateDoc, where } from "firebase/firestore";
+import { collection, doc, getDocs, limit, orderBy, query, runTransaction, serverTimestamp, updateDoc, where, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CartItem } from "@/types/product";
 import type { Address } from "@/lib/user";
@@ -7,35 +7,72 @@ import type { Order, OrderCustomer, OrderStatus, OrderTotals, PaymentMethod } fr
 
 const makeReference = (prefix: string) => `${prefix}-${new Date().getFullYear()}${String(Date.now()).slice(-8)}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
 
-export async function createOrder(input: { customer: OrderCustomer; address: Address; items: CartItem[]; totals: OrderTotals; paymentMethod: PaymentMethod }) {
-  if (!input.items.length) throw new Error("Your cart is empty.");
+export async function createOrder(input: {
+  customer: OrderCustomer;
+  address: Address;
+  items: CartItem[];
+  totals: OrderTotals;
+  paymentMethod: PaymentMethod;
+}) {
+  if (!input.items.length) {
+    throw new Error("Your cart is empty.");
+  }
 
   const orderId = makeReference("AN");
   const invoiceNumber = makeReference("INV");
   const orderRef = doc(collection(db, "orders"));
 
   await runTransaction(db, async (transaction) => {
-    for (const item of input.items) {
-      const productRef = doc(db, "products", item.slug);
-      const product = await transaction.get(productRef);
 
-      if (!product.exists()) {
-        throw new Error(`${item.name} is currently unavailable.`);
+    // STEP 1 - Read every product first
+
+    const productSnapshots = await Promise.all(
+      input.items.map(async (item) => {
+        const ref = doc(db, "products", item.slug);
+        const snapshot = await transaction.get(ref);
+
+        return {
+          item,
+          ref,
+          snapshot,
+        };
+      })
+    );
+
+    // STEP 2 - Validate stock
+
+    for (const product of productSnapshots) {
+      if (!product.snapshot.exists()) {
+        throw new Error(`${product.item.name} is currently unavailable.`);
       }
 
-      const stock = product.data()?.stock;
-      const safeStock = typeof stock === "number" ? stock : Number(stock);
+      const stock = Number(product.snapshot.data().stock);
 
-      if (!Number.isFinite(safeStock) || safeStock < 0) {
-        throw new Error(`${item.name} is currently unavailable.`);
+      if (!Number.isFinite(stock) || stock < product.item.quantity) {
+        throw new Error(
+          `${product.item.name} is no longer available in the requested quantity.`
+        );
       }
-
-      if (safeStock < item.quantity) {
-        throw new Error(`${item.name} is no longer available in the requested quantity.`);
-      }
-
-      transaction.update(productRef, { stock: safeStock - item.quantity, updatedAt: serverTimestamp() });
     }
+
+    // STEP 3 - Update stock
+
+    for (const product of productSnapshots) {
+      const data = product.snapshot.data();
+
+      if (!data) {
+          throw new Error(`${product.item.name} is currently unavailable.`);
+        }
+
+const stock = Number(data.stock);
+
+      transaction.update(product.ref, {
+        stock: stock - product.item.quantity,
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    // STEP 4 - Create order
 
     transaction.set(orderRef, {
       ...input,
@@ -43,50 +80,113 @@ export async function createOrder(input: { customer: OrderCustomer; address: Add
       invoiceNumber,
       status: "Placed",
       paymentStatus: "Pending",
-      estimatedDelivery: new Date(Date.now() + 5 * 86400000).toLocaleDateString("en-IN", { day: "numeric", month: "long" }),
+      estimatedDelivery: new Date(
+        Date.now() + 5 * 86400000
+      ).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+      }),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
 
-    transaction.update(doc(db, "users", input.customer.uid), { cart: [], updatedAt: serverTimestamp() });
+    // STEP 5 - Clear cart
+
+    transaction.update(
+      doc(db, "users", input.customer.uid),
+      {
+        cart: [],
+        updatedAt: serverTimestamp(),
+      }
+    );
   });
 
-  return { id: orderRef.id, orderId, invoiceNumber };
+  return {
+    id: orderRef.id,
+    orderId,
+    invoiceNumber,
+  };
 }
 
-export async function cancelOrder(id: string) {
+export async function getOrders(uid?: string): Promise<Order[]> {
+  try {
+    const ordersCollection = collection(db, "orders");
+    const ordersQuery = uid
+      ? query(ordersCollection, where("customer.uid", "==", uid))
+      : query(ordersCollection);
+
+    const snapshot = await getDocs(ordersQuery);
+
+    const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Order[];
+
+    // Firestore ordering may require an index; sort locally by createdAt (desc) if present
+    orders.sort((a, b) => {
+      const aTime = a.createdAt && (a.createdAt as any).seconds ? (a.createdAt as any).seconds : 0;
+      const bTime = b.createdAt && (b.createdAt as any).seconds ? (b.createdAt as any).seconds : 0;
+      return bTime - aTime;
+    });
+
+    return orders;
+  } catch (error) {
+    // Surface Firestore errors to the console for easier debugging
+    console.error("getOrders error:", error);
+    return [];
+  }
+}
+
+export async function cancelOrder(orderId: string) {
+  const orderRef = doc(db, "orders", orderId);
+  const orderSnapshot = await getDoc(orderRef);
+
+  if (!orderSnapshot.exists()) {
+    throw new Error("Order not found.");
+  }
+
+  const order = orderSnapshot.data() as Order;
+
+  // Restore stock for all items
   await runTransaction(db, async (transaction) => {
-    const orderRef = doc(db, "orders", id);
-    const orderSnapshot = await transaction.get(orderRef);
+    const productSnapshots = await Promise.all(
+      order.items.map(async (item) => {
+        const ref = doc(db, "products", item.slug);
+        const snapshot = await transaction.get(ref);
 
-    if (!orderSnapshot.exists()) return;
+        return {
+          item,
+          ref,
+          snapshot,
+        };
+      })
+    );
 
-    const orderData = orderSnapshot.data() as Partial<Order> & { items?: CartItem[] };
-    if (orderData.status === "Cancelled") return;
+    // Restore stock
+    for (const product of productSnapshots) {
+      if (product.snapshot.exists()) {
+        const data = product.snapshot.data();
+        const currentStock = Number(data.stock) || 0;
 
-    for (const item of orderData.items ?? []) {
-      const productRef = doc(db, "products", item.slug);
-      const productSnapshot = await transaction.get(productRef);
-      if (!productSnapshot.exists()) continue;
-      const stock = productSnapshot.data()?.stock;
-      const safeStock = typeof stock === "number" ? stock : Number(stock);
-      const nextStock = Number.isFinite(safeStock) ? safeStock + item.quantity : item.quantity;
-      transaction.update(productRef, { stock: nextStock, updatedAt: serverTimestamp() });
+        transaction.update(product.ref, {
+          stock: currentStock + product.item.quantity,
+          updatedAt: serverTimestamp(),
+        });
+      }
     }
 
-    transaction.update(orderRef, { status: "Cancelled", updatedAt: serverTimestamp() });
+    // Update order status
+    transaction.update(orderRef, {
+      status: "Cancelled",
+      cancelledAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
   });
+
+  return order;
 }
 
-export async function updateStatus(id: string, status: OrderStatus) {
-  await updateDoc(doc(db, "orders", id), { status, updatedAt: serverTimestamp() });
-}
 
-export async function getOrders(uid?: string) {
-  const base = collection(db, "orders");
-  const source = uid
-    ? query(base, where("customer.uid", "==", uid), orderBy("createdAt", "desc"), limit(50))
-    : query(base, orderBy("createdAt", "desc"), limit(100));
-  const snapshot = await getDocs(source);
-  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }) as Order);
+export async function updateStatus(orderId: string, status: OrderStatus) {
+  await updateDoc(doc(db, "orders", orderId), {
+    status,
+    updatedAt: serverTimestamp(),
+  });
 }
