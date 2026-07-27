@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, browserLocalPersistence, createUserWithEmailAndPassword, sendPasswordResetEmail, setPersistence, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from "firebase/auth";
+import { EmailAuthProvider, GoogleAuthProvider, browserLocalPersistence, browserSessionPersistence, createUserWithEmailAndPassword, deleteUser, reauthenticateWithCredential, sendEmailVerification, sendPasswordResetEmail, setPersistence, signInWithEmailAndPassword, signInWithPopup, signOut, updatePassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import type { SignupInput } from "@/lib/user";
 import { createUserProfile, ensureUserProfile, updateUserProfile } from "@/services/userService";
@@ -10,12 +10,13 @@ export async function signup(input: SignupInput) {
   await setPersistence(auth, browserLocalPersistence);
   const result = await createUserWithEmailAndPassword(auth, input.email, input.password);
   await updateProfile(result.user, { displayName: input.name });
+  await sendEmailVerification(result.user);
   await createUserProfile({ uid: result.user.uid, name: input.name, email: input.email, phone: input.phone, gender: input.gender, dob: input.dob, photoURL: "", wishlist: [], cart: [], addresses: [], orders: [], reviews: [], role: "customer" });
   return result.user;
 }
 
-export async function login(email: string, password: string) {
-  await setPersistence(auth, browserLocalPersistence);
+export async function login(email: string, password: string, remember = true) {
+  await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
   const result = await signInWithEmailAndPassword(auth, email, password);
   await updateUserProfile(result.user.uid, {});
   return result.user;
@@ -29,4 +30,19 @@ export async function googleLogin() {
 }
 
 export function forgotPassword(email: string) { return sendPasswordResetEmail(auth, email); }
+export function resendEmailVerification() { if (!auth.currentUser) throw new Error("Please sign in first."); return sendEmailVerification(auth.currentUser); }
+export async function changePassword(currentPassword: string, nextPassword: string) {
+  const user = auth.currentUser;
+  if (!user?.email) throw new Error("Please sign in again to change your password.");
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, nextPassword);
+}
+export async function deleteCustomerAccount(currentPassword: string) {
+  const user = auth.currentUser;
+  if (!user?.email) throw new Error("Please sign in again to delete your account.");
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+  await deleteUser(user);
+}
 export function logout() { return signOut(auth); }

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const runtime = "nodejs";
 
@@ -22,8 +24,21 @@ export async function POST(request: Request) {
     const isValid = crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(razorpay_signature));
 
     if (!isValid) {
+      await updateDoc(doc(db, "orders", orderId), {
+        paymentStatus: "Failed",
+        providerOrderId: razorpay_order_id,
+        transactionId: razorpay_payment_id,
+        updatedAt: serverTimestamp(),
+      });
       return NextResponse.json({ verified: false, error: "Invalid signature" }, { status: 400 });
     }
+
+    await updateDoc(doc(db, "orders", orderId), {
+      paymentStatus: "Paid",
+      providerOrderId: razorpay_order_id,
+      transactionId: razorpay_payment_id,
+      updatedAt: serverTimestamp(),
+    });
 
     return NextResponse.json({ verified: true, orderId, paymentId: razorpay_payment_id });
   } catch (error) {

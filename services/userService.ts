@@ -1,4 +1,4 @@
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CustomerProfile } from "@/lib/user";
 import {
@@ -34,4 +34,8 @@ export async function updateUserProfile(uid: string, updates: Partial<CustomerPr
 
 export async function ensureUserProfile(profile: CustomerProfile) {
   await setDoc(doc(db, "users", profile.uid), { ...profile, lastLogin: serverTimestamp(), createdAt: serverTimestamp() }, { merge: true });
+}
+
+export async function deleteUserProfile(uid: string) {
+  await deleteDoc(doc(db, "users", uid));
 }

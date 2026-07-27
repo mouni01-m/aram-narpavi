@@ -14,6 +14,37 @@ import { addressText, money, type PaymentMethod } from "@/lib/order";
 import type { Address } from "@/lib/user";
 
 const card = "rounded-2xl border border-[#1E5631]/12 bg-white p-5 shadow-sm sm:p-6";
+type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill: { name: string; email: string; contact: string };
+  notes: { orderId: string };
+  theme: { color: string };
+  handler: (response: RazorpayResponse) => void;
+  modal: { ondismiss: () => void };
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
+function loadRazorpayScript() {
+  return new Promise<boolean>((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -138,12 +169,47 @@ export default function CheckoutPage() {
     try {
       const customer = { uid: user.uid, name: profile?.name || user.displayName || selectedAddress.fullName, email: user.email || profile?.email || "", phone: profile?.phone || selectedAddress.phone };
       const result = await createOrder({ customer, address: selectedAddress, items, totals, paymentMethod: payment });
+      if (payment !== "Cash On Delivery") {
+        const scriptReady = await loadRazorpayScript();
+        if (!scriptReady || !window.Razorpay) throw new Error("Payment gateway could not load. Please try again.");
+        const paymentOrderResponse = await fetch("/api/payment/create-order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: totals.grandTotal, orderId: result.id }) });
+        const paymentOrder = await paymentOrderResponse.json() as { order?: { id: string; amount: number; currency: string }; error?: string };
+        if (!paymentOrderResponse.ok || !paymentOrder.order) throw new Error(paymentOrder.error || "Unable to start payment.");
+        const gatewayOrder = paymentOrder.order;
+        const Razorpay = window.Razorpay;
+        const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+        if (!Razorpay || !razorpayKey) throw new Error("Payment gateway is not configured.");
+        await new Promise<void>((resolve, reject) => {
+          const razorpay = new Razorpay({
+            key: razorpayKey,
+            amount: gatewayOrder.amount,
+            currency: gatewayOrder.currency,
+            name: "Aram Narpavi Herbals",
+            description: result.orderId,
+            order_id: gatewayOrder.id,
+            prefill: { name: customer.name, email: customer.email, contact: customer.phone },
+            notes: { orderId: result.id },
+            theme: { color: "#1E5631" },
+            handler: async (response) => {
+              const verification = await fetch("/api/payment/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...response, orderId: result.id }) });
+              const verified = await verification.json() as { verified?: boolean; error?: string };
+              if (!verification.ok || !verified.verified) reject(new Error(verified.error || "Payment verification failed."));
+              else resolve();
+            },
+            modal: { ondismiss: () => reject(new Error("Payment was cancelled.")) },
+          });
+          razorpay.open();
+        });
+      }
       clearCart();
       const payload = { ...result, customer, address: selectedAddress, items, totals, paymentMethod: payment, orderDate: new Date().toLocaleString("en-IN") };
-      await Promise.allSettled([
-        fetch("/api/send-order-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
+      const [emailResult] = await Promise.allSettled([
+        fetch("/api/send-order-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId: result.id }) }),
         fetch("/api/send-whatsapp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
       ]);
+      if (emailResult.status === "rejected" || !emailResult.value.ok) {
+        console.error("Order confirmation email could not be sent", emailResult);
+      }
       router.replace(`/order-success?order=${result.id}`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "We could not place your order. Please try again.");

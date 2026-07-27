@@ -1,0 +1,37 @@
+"use client";
+/* eslint-disable @next/next/no-img-element */
+
+import { CalendarDays, Check, Package, Star, Tag, X } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import type { Product } from "@/lib/product";
+
+type ExtendedProduct = Product & { shortDescription?: string };
+type ViewProductModalProps = { product: Product | null; onClose: () => void };
+
+function formatCurrency(value: number) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value); }
+function formatDate(value?: Product["createdAt"]) { return value ? value.toDate().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"; }
+function Badge({ children, tone = "green" }: { children: ReactNode; tone?: "green" | "gray" | "amber" }) { const styles = { green: "bg-[#EAF5E4] text-[#1E5631]", gray: "bg-slate-100 text-slate-600", amber: "bg-amber-50 text-amber-700" }; return <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${styles[tone]}`}>{children}</span>; }
+
+export default function ViewProductModal({ product, onClose }: ViewProductModalProps) {
+  const [activeImage, setActiveImage] = useState(0);
+
+  if (!product) return null;
+  const extended = product as ExtendedProduct;
+  const selectedImage = product.images[activeImage] ?? product.images[0];
+  const usageItems = product.usageInstructions.length > 0 ? product.usageInstructions : product.usage.split("\n").map((item) => item.trim()).filter(Boolean);
+  const details = [
+    ["MRP", formatCurrency(product.mrp)], ["Selling Price", formatCurrency(product.price)], ["Discount", `${product.discount}%`], ["Stock", String(product.stock)], ["Weight", product.weight || "—"], ["SKU", product.sku || "—"],
+  ];
+  return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#173522]/45 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="view-product-title"><div className="flex h-[90vh] w-[90vw] max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"><header className="flex items-center justify-between border-b border-[#1E5631]/10 px-5 py-4 sm:px-7"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#4F8A3F]">Product details</p><h2 id="view-product-title" className="mt-1 text-xl font-bold text-[#173522]">{product.name}</h2></div><button type="button" onClick={onClose} className="grid size-10 place-items-center rounded-xl text-[#607065] hover:bg-[#EAF5E4] hover:text-[#1E5631]" aria-label="Close product details"><X className="size-5" /></button></header>
+    <div className="flex-1 overflow-y-auto p-5 sm:p-7"><div className="grid gap-7 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"><section>{selectedImage ? <div className="overflow-hidden rounded-2xl border border-[#1E5631]/10 bg-[#F8FBF6]"><img src={selectedImage.url} alt={selectedImage.alt || product.name} loading="lazy" className="aspect-square w-full object-cover" /></div> : <div className="rounded-2xl border border-dashed border-[#1E5631]/20 bg-[#F8FBF6] p-8 text-center text-sm text-[#607065]">No product images are available.</div>}{product.images.length > 1 && <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">{product.images.map((image, index) => <button key={`${image.url}-${index}`} type="button" onClick={() => setActiveImage(index)} aria-label={`View product image ${index + 1}`} className={`overflow-hidden rounded-xl border bg-[#F8FBF6] ${activeImage === index ? "border-[#1E5631] ring-2 ring-[#4F8A3F]/20" : "border-[#1E5631]/10"}`}><img src={image.url} alt={image.alt || product.name} loading="lazy" className="aspect-square w-full object-cover" /></button>)}</div>}</section>
+      <section><div className="flex flex-wrap items-center gap-2"><Badge>{product.category}</Badge><Badge tone={product.active ? "green" : "gray"}>{product.active ? "Active" : "Inactive"}</Badge>{product.featured && <Badge tone="amber">Featured</Badge>}{product.bestseller && <Badge tone="amber">Best Seller</Badge>}</div><h3 className="mt-4 text-3xl font-bold tracking-tight text-[#173522]">{product.name}</h3>{extended.shortDescription && <p className="mt-3 text-base font-medium text-[#607065]">{extended.shortDescription}</p>}<p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#47584d]">{product.description || "No description provided."}</p><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">{details.map(([label, value]) => <div key={label} className="rounded-xl border border-[#1E5631]/10 bg-[#FCFDFC] p-3"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#607065]">{label}</p><p className="mt-1 text-sm font-bold text-[#173522]">{value}</p></div>)}</div></section></div>
+      <div className="mt-7 grid gap-5 lg:grid-cols-2"><InfoList title="Ingredients" icon={<Package className="size-4" />} items={product.ingredients} /><InfoList title="Benefits" icon={<Star className="size-4" />} items={product.benefits} /><InfoList title="Usage Instructions" icon={<Check className="size-4" />} items={usageItems} /><InfoList title="Storage Instructions" icon={<Tag className="size-4" />} items={product.storageInstructions} /></div>
+      <section className="mt-7 rounded-2xl border border-[#1E5631]/10 bg-[#FCFDFC] p-5"><h3 className="text-sm font-bold text-[#173522]">SEO</h3><div className="mt-3 grid gap-3 sm:grid-cols-2"><SeoValue label="Meta Title" value={product.metaTitle || product.seo.title} /><SeoValue label="Meta Description" value={product.metaDescription || product.seo.description} /></div></section>
+      <div className="mt-7 grid gap-4 sm:grid-cols-2"><DateCard label="Created Date" value={formatDate(product.createdAt)} /><DateCard label="Updated Date" value={formatDate(product.updatedAt)} /></div></div>
+    <footer className="flex justify-end border-t border-[#1E5631]/10 px-5 py-4 sm:px-7"><button type="button" onClick={onClose} className="rounded-xl bg-[#1E5631] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#174526]">Close</button></footer>
+  </div></div>;
+}
+
+function InfoList({ title, icon, items }: { title: string; icon: ReactNode; items: string[] }) { return <section className="rounded-2xl border border-[#1E5631]/10 bg-[#FCFDFC] p-5"><h3 className="flex items-center gap-2 text-sm font-bold text-[#173522]">{icon}{title}</h3>{items.length > 0 ? <ul className="mt-3 space-y-2">{items.map((item) => <li key={item} className="flex gap-2 text-sm leading-6 text-[#47584d]"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#4F8A3F]" />{item}</li>)}</ul> : <p className="mt-3 text-sm text-[#607065]">Not provided.</p>}</section>; }
+function SeoValue({ label, value }: { label: string; value?: string }) { return <div className="rounded-xl border border-[#1E5631]/10 bg-white p-3"><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#607065]">{label}</p><p className="mt-1 text-sm font-medium text-[#173522]">{value || "—"}</p></div>; }
+function DateCard({ label, value }: { label: string; value: string }) { return <div className="flex items-center gap-3 rounded-2xl border border-[#1E5631]/10 bg-white p-4"><span className="grid size-10 place-items-center rounded-xl bg-[#EAF5E4] text-[#1E5631]"><CalendarDays className="size-5" /></span><div><p className="text-xs font-bold uppercase tracking-[0.12em] text-[#607065]">{label}</p><p className="mt-1 text-sm font-bold text-[#173522]">{value}</p></div></div>; }

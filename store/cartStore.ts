@@ -6,7 +6,9 @@ import { CartItem, Product } from '@/types/product';
 interface CartStore {
   items: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
+  setItems: (items: CartItem[]) => void;
   removeFromCart: (productId: string) => void;
+  removeUnavailableProducts: (availableIds: string[]) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
@@ -15,6 +17,10 @@ interface CartStore {
 
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
+
+  setItems: (items: CartItem[]) => {
+    set({ items });
+  },
 
   addToCart: (product: Product, quantity = 1) => {
     const { items } = get();
@@ -36,6 +42,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
   removeFromCart: (productId: string) => {
     set((state) => ({
       items: state.items.filter((item) => item.id !== productId),
+    }));
+  },
+
+  removeUnavailableProducts: (availableIds: string[]) => {
+    const available = new Set(availableIds);
+    set((state) => ({
+      items: state.items.filter((item) => available.has(item.id)),
     }));
   },
 

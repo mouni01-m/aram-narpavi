@@ -1,58 +1,72 @@
-import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import { generateInvoicePdf } from "@/app/api/invoice/[orderId]/route";
+import { customerOrderTemplate } from "@/lib/email/customerOrderTemplate";
+import { sendCustomerOrderEmail } from "@/lib/email/emailService";
+import { adminDb } from "@/lib/firebaseAdmin";
 
 export const runtime = "nodejs";
 
-type Payload = {
-  id?: string;
-  orderId: string;
-  customer: { name: string; email: string };
-  items: { name: string; quantity: number; price: number }[];
-  address: { fullName: string; houseNo: string; street: string; area: string; city: string; state: string; pincode: string };
-  paymentMethod: string;
-  totals: { grandTotal: number };
-  orderDate: string;
-};
+type OrderItem = { name?: unknown; quantity?: unknown; price?: unknown };
+
+const asString = (value: unknown, fallback = ""): string => typeof value === "string" && value.trim() ? value.trim() : fallback;
+const asNumber = (value: unknown): number => typeof value === "number" && Number.isFinite(value) ? value : 0;
 
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json()) as Payload;
-    const recipient = process.env.ADMIN_ORDER_EMAIL;
-
-    if (!payload?.orderId || !payload.customer?.email) {
-      return NextResponse.json({ sent: false, message: "Invalid order payload" }, { status: 400 });
+    const { orderId } = await request.json() as { orderId?: unknown };
+    if (typeof orderId !== "string" || !orderId.trim()) {
+      return NextResponse.json({ sent: false, message: "orderId is required" }, { status: 400 });
     }
 
-    if (!process.env.RESEND_API_KEY || !recipient) {
-      return NextResponse.json({ sent: false, reason: "Email is not configured" }, { status: 202 });
+    const snapshot = await adminDb.collection("orders").doc(orderId).get();
+    if (!snapshot.exists) {
+      return NextResponse.json({ sent: false, message: "Order not found" }, { status: 404 });
     }
 
-    const items = payload.items.map((item) => `<li>${item.name} × ${item.quantity} — ₹${item.price * item.quantity}</li>`).join("");
-    const invoiceLink = process.env.NEXT_PUBLIC_SITE_URL && payload.id
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/invoice/${payload.id}`
-      : undefined;
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const order = snapshot.data();
+    if (!order) {
+      return NextResponse.json({ sent: false, message: "Order not found" }, { status: 404 });
+    }
 
-    await resend.emails.send({
-      from: process.env.ORDER_EMAIL_FROM || "Aram Narpavi Orders <orders@resend.dev>",
-      to: recipient,
-      subject: `New order ${payload.orderId}`,
-      html: `<main style="font-family:Arial,sans-serif;color:#173522;max-width:640px">
-        <h1 style="color:#1E5631">Aram Narpavi Herbals</h1>
-        <h2>New order received</h2>
-        <p><b>Customer:</b> ${payload.customer.name} (${payload.customer.email})</p>
-        <p><b>Order ID:</b> ${payload.orderId}<br/><b>Order date:</b> ${payload.orderDate}<br/><b>Payment:</b> ${payload.paymentMethod}<br/><b>Total:</b> ₹${payload.totals.grandTotal}</p>
-        <h3>Items</h3>
-        <ul>${items}</ul>
-        <h3>Delivery address</h3>
-        <p>${payload.address.fullName}<br/>${payload.address.houseNo}, ${payload.address.street}, ${payload.address.area}<br/>${payload.address.city}, ${payload.address.state} – ${payload.address.pincode}</p>
-        ${invoiceLink ? `<p><a href="${invoiceLink}" style="color:#1E5631">Download invoice</a></p>` : ""}
-      </main>`,
+    const customer = (order.customer ?? {}) as Record<string, unknown>;
+    const totals = (order.totals ?? {}) as Record<string, unknown>;
+    const customerEmail = asString(customer.email);
+    if (!customerEmail) {
+      return NextResponse.json({ sent: false, message: "Customer email is unavailable" }, { status: 422 });
+    }
+
+    const invoiceNumber = asString(order.invoiceNumber, `INV-${orderId}`);
+    const items = Array.isArray(order.items) ? order.items.map((item: OrderItem) => ({
+      name: asString(item.name, "Product"),
+      quantity: asNumber(item.quantity),
+      price: asNumber(item.price),
+    })) : [];
+    const invoicePdf = await generateInvoicePdf(orderId);
+
+    const { error } = await sendCustomerOrderEmail({
+      to: customerEmail,
+      bcc: process.env.ADMIN_EMAIL,
+      subject: `Order confirmed — ${asString(order.orderId, orderId)}`,
+      html: customerOrderTemplate({
+        customerName: asString(customer.name, "Customer"),
+        orderId: asString(order.orderId, orderId),
+        invoiceNumber,
+        paymentMethod: asString(order.paymentMethod, "Cash On Delivery"),
+        grandTotal: asNumber(totals.grandTotal),
+        items,
+      }),
+      invoiceFilename: `Invoice-${invoiceNumber}.pdf`,
+      invoicePdf,
     });
 
-    return NextResponse.json({ sent: true }, { status: 200 });
+    if (error) {
+      console.error("Customer order email failed", { orderId, error });
+      return NextResponse.json({ sent: false, message: "Unable to send order email" }, { status: 502 });
+    }
+
+    return NextResponse.json({ sent: true });
   } catch (error) {
-    console.error("Order email error", error);
+    console.error("Customer order email failed", error);
     return NextResponse.json({ sent: false, message: "Unable to send order email" }, { status: 500 });
   }
 }

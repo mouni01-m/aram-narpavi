@@ -1,11 +1,14 @@
 "use client";
-import { collection, doc, getDocs, limit, orderBy, query, runTransaction, serverTimestamp, updateDoc, where, getDoc } from "firebase/firestore";
+import { collection, doc, getDocs, query, runTransaction, serverTimestamp, updateDoc, where, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { CartItem } from "@/types/product";
 import type { Address } from "@/lib/user";
 import type { Order, OrderCustomer, OrderStatus, OrderTotals, PaymentMethod } from "@/lib/order";
 
 const makeReference = (prefix: string) => `${prefix}-${new Date().getFullYear()}${String(Date.now()).slice(-8)}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+const timestampSeconds = (value: unknown) => (
+  typeof value === "object" && value !== null && "seconds" in value && typeof value.seconds === "number" ? value.seconds : 0
+);
 
 export async function createOrder(input: {
   customer: OrderCustomer;
@@ -79,7 +82,8 @@ const stock = Number(data.stock);
       orderId,
       invoiceNumber,
       status: "Placed",
-      paymentStatus: "Pending",
+      paymentStatus: input.paymentMethod === "Cash On Delivery" ? "Pending" : "Pending",
+      transactionId: "",
       estimatedDelivery: new Date(
         Date.now() + 5 * 86400000
       ).toLocaleDateString("en-IN", {
@@ -108,6 +112,15 @@ const stock = Number(data.stock);
   };
 }
 
+export async function markOrderPaid(orderDocumentId: string, transactionId: string, providerOrderId: string) {
+  await updateDoc(doc(db, "orders", orderDocumentId), {
+    paymentStatus: "Paid",
+    transactionId,
+    providerOrderId,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 export async function getOrders(uid?: string): Promise<Order[]> {
   try {
     const ordersCollection = collection(db, "orders");
@@ -121,9 +134,7 @@ export async function getOrders(uid?: string): Promise<Order[]> {
 
     // Firestore ordering may require an index; sort locally by createdAt (desc) if present
     orders.sort((a, b) => {
-      const aTime = a.createdAt && (a.createdAt as any).seconds ? (a.createdAt as any).seconds : 0;
-      const bTime = b.createdAt && (b.createdAt as any).seconds ? (b.createdAt as any).seconds : 0;
-      return bTime - aTime;
+      return timestampSeconds(b.createdAt) - timestampSeconds(a.createdAt);
     });
 
     return orders;
@@ -184,9 +195,36 @@ export async function cancelOrder(orderId: string) {
 }
 
 
-export async function updateStatus(orderId: string, status: OrderStatus) {
-  await updateDoc(doc(db, "orders", orderId), {
-    status,
-    updatedAt: serverTimestamp(),
-  });
+import { getAuth } from "firebase/auth";
+
+export async function updateStatus(
+  orderId: string,
+  status: OrderStatus
+) {
+  console.log("======== UPDATE STATUS ========");
+
+  console.log("Current User:");
+  console.log(getAuth().currentUser);
+
+  console.log("Order ID:");
+  console.log(orderId);
+
+  console.log("New Status:");
+  console.log(status);
+
+ const auth = getAuth();
+
+console.log("Current User UID:", auth.currentUser?.uid);
+console.log("Updating Order:", orderId);
+
+const orderRef = doc(db, "orders", orderId);
+
+await updateDoc(orderRef, {
+  status,
+  updatedAt: serverTimestamp(),
+});
+
+console.log("Update Successful");
+
+  console.log("Status Updated Successfully");
 }
