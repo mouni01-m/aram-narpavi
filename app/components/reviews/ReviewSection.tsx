@@ -5,23 +5,30 @@ import { Star } from 'lucide-react';
 
 import ReviewForm from './ReviewForm';
 import ReviewList from './ReviewList';
-import { getReviews, type ReviewRecord } from '@/lib/reviews';
+import { getReviews, type ProductReviewsState } from '@/lib/reviews';
 
 interface Props {
   productId: string;
+  productName: string;
 }
 
-export default function ReviewSection({ productId }: Props) {
-  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
+export default function ReviewSection({ productId, productName }: Props) {
+  const [reviewState, setReviewState] = useState<ProductReviewsState>({
+    reviews: [],
+    loading: Boolean(productId),
+    error: productId ? null : new Error('This product does not have a valid Firestore ID.'),
+    path: '',
+    productId,
+    productName,
+  });
 
   useEffect(() => {
-    const unsubscribe = getReviews(productId, (data) => {
-      setReviews(data);
-    });
+    if (!productId) return undefined;
 
-    return () => unsubscribe();
-  }, [productId]);
+    return getReviews(productId, setReviewState, productName);
+  }, [productId, productName]);
 
+  const { reviews, loading, error, path } = reviewState;
   const totalReviews = reviews.length;
 
   const averageRating =
@@ -141,7 +148,7 @@ export default function ReviewSection({ productId }: Props) {
 
             <div className="mt-8">
 
-              <ReviewForm productId={productId} />
+              <ReviewForm productId={productId} productName={productName} />
 
             </div>
 
@@ -151,7 +158,12 @@ export default function ReviewSection({ productId }: Props) {
 
           <div>
 
-            <ReviewList productId={productId} />
+            <ReviewList
+              error={error}
+              firestorePath={path}
+              loading={loading}
+              reviews={reviews}
+            />
 
           </div>
 

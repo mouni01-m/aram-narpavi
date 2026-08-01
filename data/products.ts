@@ -2,7 +2,7 @@ import { Product } from '@/types/product';
 
 export const products: Product[] = [
   {
-    id: '1',
+    id: 'kuppameni-soap',
     slug: 'kuppameni-soap',
     name: 'Kuppameni Soap',
     category: 'soaps',
@@ -24,7 +24,7 @@ export const products: Product[] = [
     usage: 'Wet the skin and bar, work into a gentle lather, massage over the body, and rinse thoroughly. Keep the bar dry between uses.',
   },
   {
-    id: '2',
+    id: 'charcoal-soap',
     slug: 'charcoal-soap',
     name: 'Charcoal Soap',
     category: 'soaps',
@@ -45,7 +45,7 @@ export const products: Product[] = [
     usage: 'Lather the wet bar between your palms, apply to damp skin, and rinse well. Begin with once-daily use on sensitive skin.',
   },
   {
-    id: '3',
+    id: 'manjistha-soap',
     slug: 'manjistha-soap',
     name: 'Manjistha Soap',
     category: 'soaps',
@@ -67,7 +67,7 @@ export const products: Product[] = [
     usage: 'Massage the lather over wet skin using circular motions, then rinse thoroughly. Store in a well-drained soap dish.',
   },
   {
-    id: '4',
+    id: 'multani-mitti-soap',
     slug: 'multani-mitti-soap',
     name: 'Multani Mitti Soap',
     category: 'soaps',
@@ -88,7 +88,7 @@ export const products: Product[] = [
     usage: 'Apply the lather to wet skin, avoiding the eye area. Rinse thoroughly and follow with moisturiser if your skin feels dry.',
   },
   {
-    id: '5',
+    id: 'nalangumavu-soap',
     slug: 'nalangumavu-soap',
     name: 'Nalangumavu Soap',
     category: 'soaps',
@@ -110,7 +110,7 @@ export const products: Product[] = [
     usage: 'Work into a creamy lather on wet skin, massage gently, and rinse. Suitable for regular bath and body use.',
   },
   {
-    id: '6',
+    id: 'karpooravalli-thailam',
     slug: 'karpooravalli-thailam',
     name: 'Karpooravalli Thailam',
     category: 'oils',
@@ -132,7 +132,7 @@ export const products: Product[] = [
     usage: 'Warm a small amount between the palms and massage gently onto the intended area. For external use only.',
   },
   {
-    id: '7',
+    id: 'asafoetida',
     slug: 'asafoetida',
     name: 'Pure Asafoetida',
     category: 'wellness',
@@ -154,7 +154,7 @@ export const products: Product[] = [
     usage: 'Use a small pinch while tempering curries, gravies, or lentil dishes. Store tightly closed in a cool, dry place.',
   },
   {
-    id: '8',
+    id: 'pain-balm',
     slug: 'pain-balm',
     name: 'Herbal Pain Balm',
     category: 'wellness',

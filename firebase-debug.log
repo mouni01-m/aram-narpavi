@@ -1,0 +1,83 @@
+[debug] [2026-08-01T13:03:35.524Z] ----------------------------------------------------------------------
+[debug] [2026-08-01T13:03:35.528Z] Command:       /usr/local/bin/node /usr/local/bin/firebase init
+[debug] [2026-08-01T13:03:35.528Z] CLI Version:   15.25.1
+[debug] [2026-08-01T13:03:35.528Z] Platform:      darwin
+[debug] [2026-08-01T13:03:35.528Z] Node Version:  v24.16.0
+[debug] [2026-08-01T13:03:35.528Z] Detected Agent: unknown
+[debug] [2026-08-01T13:03:35.528Z] Time:          Sat Aug 01 2026 18:33:35 GMT+0530 (India Standard Time)
+[debug] [2026-08-01T13:03:35.528Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/inbarasan/aram-narpavi
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-08-01T13:04:13.243Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-01T13:04:13.244Z] > authorizing via signed-in user (aramnarpavi@gmail.com)
+[debug] [2026-08-01T13:04:13.261Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:13.261Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:13.262Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2026-08-01T13:04:14.134Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2026-08-01T13:04:14.134Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] 
+=== Firestore Setup
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-01T13:04:16.377Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:16.377Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:16.379Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/services/firestore.googleapis.com [none]
+[debug] [2026-08-01T13:04:16.379Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/services/firestore.googleapis.com  x-goog-user-project=aram-narpavi-herbals-19a45
+[debug] [2026-08-01T13:04:18.264Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/services/firestore.googleapis.com 200
+[debug] [2026-08-01T13:04:18.264Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/services/firestore.googleapis.com [omitted]
+[info] ✔  firestore: required API firestore.googleapis.com is enabled 
+[debug] [2026-08-01T13:04:18.273Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:18.273Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:18.273Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/databases [none]
+[debug] [2026-08-01T13:04:19.242Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/databases 200
+[debug] [2026-08-01T13:04:19.242Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/databases {"databases":[{"name":"projects/aram-narpavi-herbals-19a45/databases/(default)","uid":"1b44122a-56b0-4726-94d9-3ed9771cf678","createTime":"2026-06-30T13:05:22.231506Z","updateTime":"2026-06-30T13:05:22.231506Z","locationId":"asia-south1","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-01T12:04:19.140866Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"j","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IKnjl4u//5UDMNr57/mHr5UD"}]}
+[info] 
+[info] Firestore Security Rules allow you to define how and when to allow
+[info] requests. You can keep these rules in your project directory
+[info] and publish them with firebase deploy.
+[info] 
+[debug] [2026-08-01T13:04:41.443Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:41.443Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:41.444Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/releases pageSize=10&pageToken=
+[debug] [2026-08-01T13:04:42.832Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/releases 200
+[debug] [2026-08-01T13:04:42.832Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/releases {"releases":[{"name":"projects/aram-narpavi-herbals-19a45/releases/cloud.firestore","rulesetName":"projects/aram-narpavi-herbals-19a45/rulesets/7080f584-c691-4d1c-82e4-c22269b000da","createTime":"2026-06-30T13:05:30.309281Z","updateTime":"2026-08-01T12:19:41.961261Z"}]}
+[debug] [2026-08-01T13:04:42.833Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:42.833Z] Checked if tokens are valid: true, expires at: 1785592642548
+[debug] [2026-08-01T13:04:42.833Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/rulesets/7080f584-c691-4d1c-82e4-c22269b000da [none]
+[debug] [2026-08-01T13:04:44.226Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/rulesets/7080f584-c691-4d1c-82e4-c22269b000da 200
+[debug] [2026-08-01T13:04:44.227Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/aram-narpavi-herbals-19a45/rulesets/7080f584-c691-4d1c-82e4-c22269b000da [omitted]
+[info] i  Downloaded the existing Firestore Security Rules from the Firebase console 
+[info] 
+[info] Firestore indexes allow you to perform complex queries while
+[info] maintaining performance that scales with the size of the result
+[info] set. You can keep index definitions in your project directory
+[info] and publish them with firebase deploy.
+[info] 
+[debug] [2026-08-01T13:07:11.792Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (/usr/local/lib/node_modules/firebase-tools/node_modules/@inquirer/core/dist/commonjs/lib/create-prompt.js:101:37)
+    at Interface.emit (node:events:509:28)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1327:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:284:20)
+    at ReadStream.emit (node:events:521:24)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+    at ReadStream.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+[error] 
+[error] Error: An unexpected error has occurred.

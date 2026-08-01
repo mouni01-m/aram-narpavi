@@ -47,14 +47,22 @@ const [selectedImage, setSelectedImage] = useState(
   const imageCount = product.images.length;
 
   useEffect(() => {
-    if (!user) {
-      setWishlisted(false);
-      return;
+    let active = true;
+
+    async function syncWishlistStatus() {
+      if (!user) return false;
+      return isWishlisted(user.uid, product.slug);
     }
 
-    isWishlisted(user.uid, product.slug)
-      .then(setWishlisted)
+    void syncWishlistStatus()
+      .then((nextWishlisted) => {
+        if (active) setWishlisted(nextWishlisted);
+      })
       .catch(console.error);
+
+    return () => {
+      active = false;
+    };
   }, [user, product.slug]);
 
   function add(openCart = false) {
@@ -166,7 +174,7 @@ const [selectedImage, setSelectedImage] = useState(
    
    <section className="bg-[#EAF5E4] py-20">
   <Container>
-<ReviewSection productId={product.slug} />
+<ReviewSection productId={product.id} productName={product.name} />
   </Container>
 </section>
   </div>;

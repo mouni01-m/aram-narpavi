@@ -67,12 +67,13 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
     if (!form.name.trim() || !form.category || form.price <= 0 || form.stock < 0 || form.images.length + newImages.length === 0) { toast.error("Please complete the required product information."); return; }
     try {
       setSaving(true);
-      const productId = product?.id ?? crypto.randomUUID();
+      const productId = product?.id ?? slugify(form.slug || form.name);
+      if (!productId) { toast.error("A valid product name or slug is required."); return; }
       const uploadedImages = await uploadNewImages(productId);
       const usageInstructions = form.usage.split("\n").map((item) => item.trim()).filter(Boolean);
-      const payload: Omit<Product, "id"> & Pick<FormState, "shortDescription" | "storageInstructions"> = { ...form, name: form.name.trim(), slug: form.slug.trim() || slugify(form.name), images: [...form.images, ...uploadedImages], discount: calculatedDiscount, ingredients: form.ingredients, benefits: form.benefits, usage: form.usage.trim(), usageInstructions, rating: product?.rating ?? { average: 0, count: 0 }, shortDescription: form.shortDescription.trim(), storageInstructions: form.storageInstructions, seo: product?.seo ?? {} };
+      const payload: Omit<Product, "id"> & Pick<FormState, "shortDescription" | "storageInstructions"> = { ...form, name: form.name.trim(), slug: productId, images: [...form.images, ...uploadedImages], discount: calculatedDiscount, ingredients: form.ingredients, benefits: form.benefits, usage: form.usage.trim(), usageInstructions, rating: product?.rating ?? { average: 0, count: 0 }, shortDescription: form.shortDescription.trim(), storageInstructions: form.storageInstructions, seo: product?.seo ?? {} };
       if (product) await updateProduct(product.id, payload);
-      else await addProduct(payload);
+      else await addProduct(payload, productId);
       toast.success(product ? "Product updated." : "Product created.");
       onSaved();
       onClose();

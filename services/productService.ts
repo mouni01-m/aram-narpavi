@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
   serverTimestamp,
+  setDoc,
   Timestamp,
   updateDoc,
   type DocumentData,
@@ -115,7 +115,7 @@ export function normalizeProductSnapshot(snapshot: QueryDocumentSnapshot<Documen
   return {
     id: snapshot.id,
     name: asString(data.name, snapshot.id),
-    slug: asString(data.slug, snapshot.id),
+    slug: snapshot.id,
     category: asString(data.category, "Uncategorized"),
     description: asString(data.description),
     images: normalizeImages(data),
@@ -178,18 +178,21 @@ export async function getProduct(
 =========================== */
 
 export async function addProduct(
-  product: Omit<Product, "id">
+  product: Omit<Product, "id">,
+  productId: string
 ) {
+  if (!productId.trim()) throw new Error("Product ID is required.");
+
   const payload = {
     ...product,
+    slug: productId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
 
-  return await addDoc(
-    collection(db, PRODUCTS_COLLECTION),
-    payload
-  );
+  const productRef = doc(db, PRODUCTS_COLLECTION, productId);
+  await setDoc(productRef, payload);
+  return productRef;
 }
 
 /* ===========================

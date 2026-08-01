@@ -1,18 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { Star, BadgeCheck } from 'lucide-react';
+import { Star, BadgeCheck, Clock } from 'lucide-react';
+import type { ReviewRecord } from '@/lib/reviews';
 
 interface ReviewCardProps {
-  review: {
-    id: string;
-    name: string;
-    rating: number;
-    comment: string;
-    images?: string[];
-    video?: string;
-    createdAt?: { seconds?: number; nanoseconds?: number } | number | string | Date;
-  };
+  review: ReviewRecord;
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
@@ -44,10 +37,17 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-          <BadgeCheck size={14} />
-          Verified
-        </div>
+        {review.status === 'approved' ? (
+          <div className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+            <BadgeCheck size={14} />
+            Verified
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+            <Clock size={14} />
+            Pending Review
+          </div>
+        )}
 
       </div>
 
@@ -88,6 +88,13 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           </video>
         </div>
       )}
+
+      {review.adminReply ? (
+        <div className="mt-5 rounded-xl border border-[#1E5631]/10 bg-[#F8F7F2] p-4">
+          <p className="text-sm font-semibold text-[#1E5631]">{review.adminReply.adminName}</p>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700">{review.adminReply.text}</p>
+        </div>
+      ) : null}
 
       {/* Date */}
       {review.createdAt && (

@@ -12,13 +12,16 @@ import {
 
 import {
   addReview,
+  assertFirestoreProductId,
 } from '@/lib/reviews';
+import { auth } from '@/lib/firebase';
 
 interface Props {
   productId: string;
+  productName: string;
 }
 
-export default function ReviewForm({ productId }: Props) {
+export default function ReviewForm({ productId, productName }: Props) {
   const [name, setName] = useState('');
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -32,6 +35,17 @@ export default function ReviewForm({ productId }: Props) {
     e.preventDefault();
 
     try {
+      if (!productId) {
+        throw new Error('[Reviews] productId is undefined. ReviewForm requires the Firestore product document ID.');
+      }
+
+      assertFirestoreProductId(productId);
+
+      if (!auth.currentUser) {
+        alert('Please sign in before submitting a review.');
+        return;
+      }
+
       setLoading(true);
 
       // Upload Images
@@ -55,15 +69,19 @@ export default function ReviewForm({ productId }: Props) {
       }
 
       // Save Firestore
-      await addReview(productId, {
-        name,
-        rating,
-        comment,
-        images: imageUrls,
-        video: videoUrl,
-      });
+      await addReview(
+        productId,
+        {
+          name,
+          rating,
+          comment,
+          images: imageUrls,
+          video: videoUrl,
+        },
+        productName
+      );
 
-      alert('Review Submitted Successfully ✅');
+      alert('Review submitted successfully.');
 
       setName('');
       setComment('');
@@ -71,11 +89,11 @@ export default function ReviewForm({ productId }: Props) {
       setImages([]);
       setVideo(null);
     } catch (err) {
-      console.error(err);
+      console.error('[Reviews] Review submission failed:', err);
       alert('Something went wrong.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (

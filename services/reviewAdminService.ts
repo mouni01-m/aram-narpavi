@@ -6,13 +6,15 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   serverTimestamp,
   updateDoc,
   type DocumentData,
   type QueryDocumentSnapshot,
+  type Unsubscribe,
 } from "firebase/firestore";
 
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 
 export type ReviewStatus = "pending" | "approved" | "rejected" | "reported" | "hidden";
 
@@ -45,6 +47,8 @@ export type AdminReview = {
   reportCount: number;
   status: ReviewStatus;
   verifiedPurchase: boolean;
+  approvedAt?: unknown;
+  approvedBy?: string | null;
   adminReply?: AdminReviewReply;
   createdAt?: unknown;
   updatedAt?: unknown;
@@ -150,6 +154,8 @@ async function normalizeReviewDocument(reviewDoc: QueryDocumentSnapshot<Document
       reportCount: asNumber(data.reportCount, asNumber(data.reports)),
       status: asStatus(data.status),
       verifiedPurchase: asBoolean(data.verifiedPurchase, asBoolean(data.verified)),
+      approvedAt: data.approvedAt,
+      approvedBy: asString(data.approvedBy) || null,
       adminReply: normalizeReply(data.adminReply),
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -179,13 +185,61 @@ export async function getAdminReviews(): Promise<AdminReview[]> {
   }
 }
 
+export function subscribeToAdminReviews(
+  onReviews: (reviews: AdminReview[]) => void,
+  onError: (error: Error) => void
+): Unsubscribe {
+  return onSnapshot(
+    collectionGroup(db, "reviews"),
+    (reviewSnapshot) => {
+      void Promise.allSettled(reviewSnapshot.docs.map(normalizeReviewDocument)).then((settledReviews) => {
+        const reviews = settledReviews.flatMap((result) => {
+          if (result.status === "rejected") {
+            console.error("Failed to normalize a review document:", result.reason);
+            return [];
+          }
+
+          return result.value ? [result.value] : [];
+        });
+
+        console.info("[Admin Reviews] Realtime snapshot size:", reviewSnapshot.size);
+        console.info("[Admin Reviews] Loaded review IDs:", reviews.map((review) => `${review.productId}/${review.id}`));
+        onReviews(reviews);
+      });
+    },
+    (error) => {
+      console.error("Admin reviews realtime listener failed:", error);
+      onError(error);
+    }
+  );
+}
+
 export async function updateAdminReview(productId: string, reviewId: string, updates: AdminReviewUpdate) {
   try {
     const payload: Record<string, unknown> = {
       updatedAt: serverTimestamp(),
     };
 
-    if (updates.status) payload.status = updates.status;
+    if (updates.status) {
+      payload.status = updates.status;
+
+      if (updates.status === "approved") {
+        payload.verifiedPurchase = true;
+        payload.approvedAt = serverTimestamp();
+        payload.approvedBy = auth.currentUser?.uid ?? null;
+      }
+
+      if (updates.status === "pending") {
+        payload.verifiedPurchase = false;
+        payload.approvedAt = null;
+        payload.approvedBy = null;
+      }
+
+      if (updates.status === "rejected" || updates.status === "hidden") {
+        payload.verifiedPurchase = false;
+      }
+    }
+
     if ("adminReply" in updates) {
       payload.adminReply = updates.adminReply
         ? {

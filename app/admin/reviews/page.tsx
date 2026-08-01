@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import {
   deleteAdminReview,
   getAdminReviews,
+  subscribeToAdminReviews,
   updateAdminReview,
   type AdminReview,
   type ReviewStatus,
@@ -149,16 +150,23 @@ export default function ReviewsPage() {
   }, []);
 
   useEffect(() => {
-    let active = true;
-
-    async function loadInitialReviews() {
-      if (!active) return;
-      await loadReviews("initial");
-    }
-
-    void loadInitialReviews();
-    return () => { active = false; };
-  }, [loadReviews]);
+    return subscribeToAdminReviews(
+      (data) => {
+        setReviews(data);
+        setLoading(false);
+        setRefreshing(false);
+        setError("");
+      },
+      (listenError) => {
+        console.error("Failed to listen to reviews:", listenError);
+        setReviews([]);
+        setLoading(false);
+        setRefreshing(false);
+        setError("Unable to load reviews from Firestore. Check Firestore rules, collection group permissions, and console logs.");
+        toast.error("Unable to load reviews.");
+      }
+    );
+  }, []);
 
   const dashboardStats = useMemo(() => {
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -226,8 +234,6 @@ export default function ReviewsPage() {
     try {
       setBusyId(review.id);
       await updateAdminReview(review.productId, review.id, { status });
-      setReviews((current) => current.map((item) => reviewKey(item) === reviewKey(review) ? { ...item, status, updatedAt: new Date().toISOString() } : item));
-      if (viewingReview && reviewKey(viewingReview) === reviewKey(review)) setViewingReview((current) => current ? { ...current, status, updatedAt: new Date().toISOString() } : current);
       toast.success(`Review ${status}.`);
     } catch (statusError) {
       console.error(`Failed to update review status for ${review.productId}/${review.id}:`, statusError);
@@ -243,7 +249,6 @@ export default function ReviewsPage() {
     try {
       setBusyId(deleteTarget.id);
       await deleteAdminReview(deleteTarget.productId, deleteTarget.id);
-      setReviews((current) => current.filter((item) => reviewKey(item) !== reviewKey(deleteTarget)));
       if (viewingReview && reviewKey(viewingReview) === reviewKey(deleteTarget)) setViewingReview(null);
       toast.success("Review deleted.");
       setDeleteTarget(null);
