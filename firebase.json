@@ -1,0 +1,8 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-south1",
+    "rules": "aram-narpavi-herbals-19a45",
+    "indexes": "firestore.rules"
+  }
+}
