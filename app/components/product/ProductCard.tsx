@@ -22,14 +22,26 @@ export function ProductCard({ product }: { product: Product }) {
 const { user } = useAuth();
   const [wishlisted, setWishlisted] = useState(false);
 useEffect(() => {
+  let active = true;
   if (!user) {
-    setWishlisted(false);
-    return;
+    const timeout = window.setTimeout(() => {
+      if (active) setWishlisted(false);
+    }, 0);
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+    };
   }
 
   isWishlisted(user.uid, product.slug)
-    .then(setWishlisted)
+    .then((nextWishlisted) => {
+      if (active) setWishlisted(nextWishlisted);
+    })
     .catch(console.error);
+
+  return () => {
+    active = false;
+  };
 }, [user, product.slug]);
   return (
     <motion.article

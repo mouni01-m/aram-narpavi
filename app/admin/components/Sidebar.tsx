@@ -10,11 +10,8 @@ import {
   Star,
   BarChart3,
   Settings,
-  LogOut,
   Leaf,
 } from "lucide-react";
-
-import { useAuth } from "@/hooks/useAuth";
 
 const menuItems = [
   {
@@ -56,8 +53,6 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-
-  const { logout } = useAuth();
 
   return (
     <aside className="hidden min-h-screen w-72 border-r border-green-100 bg-white shadow-lg lg:flex lg:flex-col">
@@ -112,19 +107,6 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Logout */}
-      <div className="border-t border-green-100 p-4">
-        <button
-          onClick={() => void logout()}
-          className="flex w-full items-center gap-3 rounded-xl bg-red-50 px-4 py-3 text-red-600 transition hover:bg-red-100"
-        >
-          <LogOut size={20} />
-
-          <span className="font-medium">
-            Logout
-          </span>
-        </button>
-      </div>
     </aside>
   );
 }

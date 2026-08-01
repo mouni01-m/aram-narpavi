@@ -150,7 +150,7 @@ export function OrderList({ uid }: { uid: string }) {
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-2 text-xs font-bold text-gray-600">
                     Cancelled
                   </span>
-                ) : CANCELLABLE_STATUSES.includes(order.status as any) ? (
+                ) : CANCELLABLE_STATUSES.some((status) => status === order.status) ? (
                   <button
                     onClick={() =>
                       setCancelModal({ orderId: order.id, orderId_: order.orderId })
@@ -200,4 +200,3 @@ export function OrderList({ uid }: { uid: string }) {
     </>
   );
 }
-

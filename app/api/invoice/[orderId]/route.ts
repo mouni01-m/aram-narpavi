@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import QRCode from "qrcode";
 import { NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb, PageSizes, type PDFFont, type PDFPage } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, PageSizes, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
 import { adminDb } from "@/lib/firebaseAdmin";
 
 export const runtime = "nodejs";
@@ -327,7 +327,7 @@ function drawFooter(page: PDFPage, pageNumber: number, totalPages: number, width
   });
 }
 
-function drawWatermark(page: PDFPage, image: any, width: number, height: number): void {
+function drawWatermark(page: PDFPage, image: PDFImage, width: number, height: number): void {
   const scale = Math.min(260 / image.width, 260 / image.height);
   const watermarkWidth = image.width * scale;
   const watermarkHeight = image.height * scale;

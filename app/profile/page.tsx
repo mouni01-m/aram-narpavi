@@ -10,6 +10,7 @@ import { getWishlist, removeFromWishlist } from "@/services/wishlistService";
 import { useCartStore } from "@/store/cartStore";
 import type { Address } from "@/lib/user";
 import { OrderList } from "@/components/orders/OrderList";
+import type { Product } from "@/types/product";
 
 const tabs = [
   { id: "profile", label: "Profile Information", icon: UserRound },
@@ -34,7 +35,7 @@ function ProfilePageContent() {
   const [cartToast, setCartToast] = useState("");
   const [form, setForm] = useState({ name: "", phone: "", gender: "", dob: "" });
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [wishlist, setWishlist] = useState<any[]>([]);
+  const [wishlist, setWishlist] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -100,7 +101,7 @@ function ProfilePageContent() {
         dob: profile?.dob ?? "",
       };
 
-  const moveToCart = async (item: any) => {
+  const moveToCart = async (item: Product) => {
     if (!user) return;
 
     try {

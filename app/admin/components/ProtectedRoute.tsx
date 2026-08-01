@@ -26,9 +26,13 @@ export default function ProtectedRoute({
       if (loading) return;
 
       if (!user) {
+        setIsAdmin(false);
+        setCheckingAdmin(false);
         router.replace("/login");
         return;
       }
+
+      setCheckingAdmin(true);
 
       try {
         const adminRef = doc(db, "admins", user.uid);
@@ -49,6 +53,10 @@ export default function ProtectedRoute({
 
     verifyAdmin();
   }, [user, loading, router]);
+
+  if (!loading && !user) {
+    return null;
+  }
 
   if (loading || checkingAdmin) {
     return (
@@ -74,7 +82,7 @@ export default function ProtectedRoute({
           </h2>
 
           <p className="mb-6 text-gray-600">
-            You don't have permission to access the Admin Dashboard.
+            You don&apos;t have permission to access the Admin Dashboard.
           </p>
 
           <button

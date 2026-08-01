@@ -1,25 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
   BarChart3,
   Bell,
   Leaf,
   LayoutDashboard,
-  LogOut,
   Menu,
   Package,
   Search,
   Settings,
   ShoppingBag,
-  ShieldCheck,
   Star,
   Users,
   X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import ProtectedRoute from "@/app/admin/components/ProtectedRoute";
+import { ProfileDropdown } from "@/app/admin/components/ProfileDropdown";
 
 type AdminLayoutProps = { children: ReactNode };
 
@@ -40,23 +40,14 @@ function pageTitle(pathname: string): string {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, profile, logout } = useAuth();
+  const { user, profile } = useAuth();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const currentTitle = pageTitle(pathname);
   const adminName = profile?.name || user?.displayName || "Admin";
+  const adminAvatar = profile?.photoURL || user?.photoURL || "";
 
   const isActive = (href: string) => href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const closeMobileNavigation = () => setMobileNavigationOpen(false);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.replace("/login");
-    } catch (error) {
-      console.error("Admin logout failed", error);
-    }
-  };
 
   const sidebar = (mobile = false) => (
     <aside className={mobile ? "flex h-full w-[19rem] flex-col bg-[#143d24] text-white shadow-2xl" : "hidden h-screen w-72 shrink-0 flex-col bg-[#143d24] text-white lg:sticky lg:top-0 lg:flex"}>
@@ -85,18 +76,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           })}
         </ul>
       </nav>
-
-      <div className="border-t border-white/10 p-4">
-        <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/5 p-3">
-          <span className="grid size-9 place-items-center rounded-full bg-[#4f8a3f] text-xs font-extrabold">{adminName.slice(0, 1).toUpperCase()}</span>
-          <span className="min-w-0"><span className="block truncate text-sm font-bold">{adminName}</span><span className="block text-xs text-white/55">Super Admin</span></span>
-        </div>
-        <button type="button" onClick={() => void handleLogout()} className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-[#ffd0d0] transition hover:bg-red-400/15 hover:text-white"><LogOut className="size-5" />Logout</button>
-      </div>
     </aside>
   );
 
-  return <div className="admin-layout min-h-screen bg-[#f5f7f3] text-[#173522]">
+  return <ProtectedRoute><div className="admin-layout min-h-screen bg-[#f5f7f3] text-[#173522]">
     <style jsx global>{`
       body:has(.admin-layout) > nav,
       body:has(.admin-layout) > footer { display: none !important; }
@@ -128,10 +111,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
               <button type="button" aria-label="Notifications" className="relative grid size-10 place-items-center rounded-xl border border-[#1e5631]/10 bg-white text-[#1e5631] shadow-sm transition hover:bg-[#eaf5e4]"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full border-2 border-white bg-[#e69500]" /></button>
               <div className="hidden h-8 w-px bg-[#1e5631]/10 sm:block" />
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="grid size-10 place-items-center rounded-full bg-[#1e5631] text-sm font-extrabold text-white shadow-lg shadow-[#1e5631]/20">{adminName.slice(0, 1).toUpperCase()}</span>
-                <span className="hidden min-w-0 sm:block"><span className="block max-w-32 truncate text-sm font-bold text-[#173d24]">{adminName}</span><span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#4f8a3f]"><ShieldCheck className="size-3" />Super Admin</span></span>
-              </div>
+              <ProfileDropdown name={adminName} email={user?.email} avatarUrl={adminAvatar} />
             </div>
           </div>
         </header>
@@ -139,5 +119,5 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <main className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
-  </div>;
+  </div></ProtectedRoute>;
 }

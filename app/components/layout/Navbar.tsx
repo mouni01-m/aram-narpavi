@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, Heart, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
@@ -30,7 +30,7 @@ export function Navbar() {
 
   const totalItems = useCartStore((state) => state.getTotalItems());
 
-  const loadWishlistCount = async () => {
+  const loadWishlistCount = useCallback(async () => {
     if (!user) {
       setWishlistCount(0);
       return;
@@ -42,11 +42,12 @@ export function Navbar() {
     } catch (error) {
       console.error('Error loading wishlist count:', error);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    loadWishlistCount();
-  }, [user]);
+    const timeout = window.setTimeout(() => void loadWishlistCount(), 0);
+    return () => window.clearTimeout(timeout);
+  }, [loadWishlistCount]);
 
   useEffect(() => {
     const openCart = () => setCartOpen(true);
@@ -59,7 +60,7 @@ export function Navbar() {
       window.removeEventListener('open-cart', openCart);
       window.removeEventListener('wishlist-updated', updateWishlist);
     };
-  }, [user]);
+  }, [loadWishlistCount]);
 
   
 

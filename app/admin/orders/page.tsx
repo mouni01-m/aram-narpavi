@@ -74,7 +74,9 @@ export default function OrdersPage() {
 
   useEffect(() => {
 
-    loadOrders();
+    const timeout = window.setTimeout(() => void loadOrders(), 0);
+
+    return () => window.clearTimeout(timeout);
 
   }, [loadOrders]);
 
